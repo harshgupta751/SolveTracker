@@ -1,0 +1,75 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: 'class',
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Syne', 'sans-serif'],
+        mono:    ['JetBrains Mono', 'monospace'],
+        body:    ['DM Sans', 'sans-serif'],
+      },
+      colors: {
+        brand: {
+          50:  '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+        },
+        surface: {
+          dark:    '#09090f',
+          'dark-2':'#111118',
+          'dark-3':'#16161f',
+          'dark-4':'#1c1c28',
+          'dark-5':'#22222f',
+          light:   '#fafbff',
+          'light-2':'#f1f4fa',
+          'light-3':'#e8ecf4',
+        },
+        edge: {
+          dark:  '#1e1e2e',
+          light: '#e2e8f0',
+        },
+      },
+      backgroundImage: {
+        'grid-dark':  "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(30 30 46 / 0.8)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e\")",
+        'grid-light': "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(226 232 240 / 0.8)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e\")",
+      },
+      animation: {
+        'pulse-slow':    'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin-slow':     'spin 8s linear infinite',
+        'float':         'float 6s ease-in-out infinite',
+        'glow':          'glow 2s ease-in-out infinite alternate',
+        'blink':         'blink 1.2s step-end infinite',
+        'slide-up':      'slideUp 0.4s ease-out',
+        'fade-in':       'fadeIn 0.5s ease-out',
+        'count-up':      'countUp 0.6s ease-out',
+        'shimmer':       'shimmer 2s linear infinite',
+        'border-spin':   'borderSpin 4s linear infinite',
+      },
+      keyframes: {
+        float:      { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-8px)' } },
+        glow:       { from: { boxShadow: '0 0 10px #22c55e30' }, to: { boxShadow: '0 0 25px #22c55e60, 0 0 50px #22c55e20' } },
+        blink:      { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0' } },
+        slideUp:    { from: { opacity: '0', transform: 'translateY(16px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+        fadeIn:     { from: { opacity: '0' }, to: { opacity: '1' } },
+        shimmer:    { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+        borderSpin: { '100%': { transform: 'rotate(360deg)' } },
+      },
+      boxShadow: {
+        'glow-sm':  '0 0 12px rgba(34, 197, 94, 0.25)',
+        'glow-md':  '0 0 24px rgba(34, 197, 94, 0.35)',
+        'glow-lg':  '0 0 48px rgba(34, 197, 94, 0.20)',
+        'card-dark':'0 4px 24px rgba(0,0,0,0.4)',
+        'card-light':'0 4px 24px rgba(0,0,0,0.06)',
+      },
+    },
+  },
+  plugins: [],
+};

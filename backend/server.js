@@ -7,6 +7,7 @@ import authRoutes     from './routes/auth.js';
 import leetcodeRoutes from './routes/leetcode.js';
 import sheetRoutes    from './routes/sheets.js';
 import analyticsRoutes from './routes/analytics.js';
+import aiRoutes from './routes/ai.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use('/api/auth',      authRoutes);
 app.use('/api/leetcode',  leetcodeRoutes);
 app.use('/api/sheets',    sheetRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 

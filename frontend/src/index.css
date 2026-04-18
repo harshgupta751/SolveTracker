@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables ──────────────────────────────────────────────────── */
+:root {
+  --bg:            #fafbff;
+  --bg-2:          #f1f4fa;
+  --bg-3:          #e8ecf4;
+  --surface:       #ffffff;
+  --surface-2:     #f8faff;
+  --border:        #e2e8f0;
+  --border-2:      #cbd5e1;
+  --text-primary:  #0f172a;
+  --text-secondary:#475569;
+  --text-muted:    #94a3b8;
+  --accent:        #22c55e;
+  --accent-dim:    #16a34a;
+  --accent-glow:   rgba(34, 197, 94, 0.15);
+  --easy:          #22c55e;
+  --medium:        #f59e0b;
+  --hard:          #ef4444;
+  --easy-bg:       rgba(34, 197, 94, 0.10);
+  --medium-bg:     rgba(245, 158, 11, 0.10);
+  --hard-bg:       rgba(239, 68, 68, 0.10);
+  color-scheme: light;
+}
+
+.dark {
+  --bg:            #09090f;
+  --bg-2:          #111118;
+  --bg-3:          #16161f;
+  --surface:       #111118;
+  --surface-2:     #16161f;
+  --border:        #1e1e2e;
+  --border-2:      #2a2a3d;
+  --text-primary:  #e2e8f0;
+  --text-secondary:#94a3b8;
+  --text-muted:    #4a5568;
+  --accent:        #4ade80;
+  --accent-dim:    #22c55e;
+  --accent-glow:   rgba(74, 222, 128, 0.12);
+  --easy:          #4ade80;
+  --medium:        #fbbf24;
+  --hard:          #f87171;
+  --easy-bg:       rgba(74, 222, 128, 0.10);
+  --medium-bg:     rgba(251, 191, 36, 0.10);
+  --hard-bg:       rgba(248, 113, 113, 0.10);
+  color-scheme: dark;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Custom Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ─── Utility Classes ────────────────────────────────────────────────── */
+.font-display  { font-family: 'Syne', sans-serif; }
+.font-code     { font-family: 'JetBrains Mono', monospace; }
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .glass {
+  background: rgba(17, 17, 24, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--border-2);
+}
+
+.accent-border {
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.accent-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.accent-border:hover::before { opacity: 1; }
+
+/* Recharts override for dark mode */
+.recharts-text { fill: var(--text-secondary) !important; }
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--border) !important;
+}
+.recharts-tooltip-wrapper { outline: none; }
+
+/* Selection color */
+::selection { background: var(--accent-glow); color: var(--text-primary); }
+
+/* Input resets for auth forms */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset;
+  -webkit-text-fill-color: var(--text-primary);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Add these to the bottom of index.css */
+
+/* ─── Skeleton shimmer ───────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--border-2) 50%,
+    var(--border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite linear;
+}

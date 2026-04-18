@@ -12,7 +12,10 @@ import Progress      from '@/pages/student/Progress';
 import TeacherDashboard from '@/pages/teacher/Dashboard';
 import CreateSheet   from '@/pages/teacher/CreateSheet';
 import StudentView   from '@/pages/teacher/StudentView';
+import Leaderboard from '@/pages/Leaderboard';
+import SheetEditor from '@/pages/teacher/SheetEditor';
 import AppLayout     from '@/components/layout/AppLayout';
+
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 const PrivateRoute = ({ children, role }) => {
@@ -47,6 +50,7 @@ export default function App() {
         <Route index element={<StudentDashboard />} />
         <Route path="sheets"   element={<MySheets />} />
         <Route path="progress" element={<Progress />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
       </Route>
 
       {/* Teacher */}
@@ -54,6 +58,8 @@ export default function App() {
         <Route index element={<TeacherDashboard />} />
         <Route path="create-sheet"      element={<CreateSheet />} />
         <Route path="student/:studentId" element={<StudentView />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="edit-sheet/:sheetId" element={<SheetEditor />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

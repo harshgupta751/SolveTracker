@@ -156,3 +156,71 @@ input:-webkit-autofill:focus {
   background-size: 200% 100%;
   animation: shimmer 1.8s infinite linear;
 }
+
+
+/* ─── Mobile responsive utilities ───────────────────────────────────── */
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 640px) {
+  .card { border-radius: 10px; }
+
+  /* Stack grids to single column */
+  .mobile-stack {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Compact spacing */
+  main { padding: 16px !important; }
+
+  /* Hide non-essential table columns on mobile */
+  .hide-mobile { display: none !important; }
+}
+
+/* ─── Touch-friendly tap targets ─────────────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Slightly larger text for touch */
+  .font-code { letter-spacing: 0.01em; }
+}
+
+/* ─── iOS safe areas ─────────────────────────────────────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .sidebar-bottom {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+  main {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ─── Mobile sidebar overlay ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  aside {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  aside.mobile-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  }
+}
+
+/* ─── Print styles (for progress reports) ────────────────────────────── */
+@media print {
+  aside, nav, button { display: none !important; }
+  main { padding: 0 !important; }
+  .card { border: 1px solid #e2e8f0 !important; box-shadow: none !important; }
+}

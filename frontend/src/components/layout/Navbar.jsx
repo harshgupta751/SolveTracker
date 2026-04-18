@@ -1,10 +1,11 @@
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { RefreshCw, Bell, Search } from 'lucide-react';
+import { RefreshCw, Bell, Search, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { leetcodeAPI } from '@/api';
 import toast from 'react-hot-toast';
 import useAuthStore from '@/store/authStore';
+import useCommandStore from '@/store/commandStore';
 
 const pageTitles = {
   '/student':          ['Dashboard',  'Your LeetCode progress at a glance'],
@@ -18,6 +19,8 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const { user } = useAuthStore();
   const [syncing, setSyncing] = useState(false);
+
+  const { openPalette } = useCommandStore();
 
   const [title, subtitle] = pageTitles[pathname] ?? ['DSA&Chill', ''];
   const isStudentDash = pathname === '/student';
@@ -63,23 +66,32 @@ export default function Navbar() {
       {/* Actions */}
       <div className="flex items-center gap-2">
         {/* Search placeholder */}
-        <motion.button
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.96 }}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all"
-          style={{
-            background:  'var(--bg-2)',
-            border:      '1px solid var(--border)',
-            color:       'var(--text-muted)',
-          }}
-        >
-          <Search size={14} />
-          <span className="hidden sm:inline font-code text-xs">Search...</span>
-          <kbd className="hidden sm:inline text-xs px-1.5 py-0.5 rounded"
-               style={{ background: 'var(--border)', color: 'var(--text-muted)', fontSize: '10px' }}>
-            ⌘K
-          </kbd>
-        </motion.button>
+<motion.button
+  whileTap={{ scale: 0.96 }}
+  onClick={onMenuClick}
+  className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl"
+  style={{ background: 'var(--bg-2)', border: '1px solid var(--border)' }}
+>
+  <Menu size={16} style={{ color: 'var(--text-secondary)' }} />
+</motion.button>        
+<motion.button
+  whileHover={{ scale: 1.04 }}
+  whileTap={{ scale: 0.96 }}
+  onClick={openPalette}
+  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all"
+  style={{
+    background:  'var(--bg-2)',
+    border:      '1px solid var(--border)',
+    color:       'var(--text-muted)',
+  }}
+>
+  <Search size={14} />
+  <span className="hidden sm:inline font-code text-xs">Search commands...</span>
+  <kbd className="hidden sm:inline text-xs px-1.5 py-0.5 rounded"
+       style={{ background: 'var(--border)', color: 'var(--text-muted)', fontSize: '10px' }}>
+    ⌘K
+  </kbd>
+</motion.button>
 
         {/* Sync button — only for students */}
         {isStudentDash && (

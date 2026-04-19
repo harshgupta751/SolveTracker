@@ -315,7 +315,7 @@ export default function GeminiInsight({
               style={{ color: 'var(--text-muted)' }}
             >
               Powered by{' '}
-              <span style={{ color: GEMINI_COLOR }}>Gemini 1.5 Flash</span>
+              <span style={{ color: GEMINI_COLOR }}>Gemini 2.5 Flash</span>
               {' '}· updates on refresh
             </motion.p>
           </motion.div>

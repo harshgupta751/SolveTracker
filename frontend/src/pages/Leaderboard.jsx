@@ -4,7 +4,7 @@ import {
   Trophy, Medal, Flame, Target, TrendingUp,
   ArrowUp, ArrowDown, Minus, Search, Wifi, WifiOff,
 } from 'lucide-react';
-import { useClassAnalytics } from '@/hooks/useAnalytics';
+import { useLeaderboard } from '@/hooks/useAnalytics';
 import useAuthStore from '@/store/authStore';
 import AnimatedCounter from '@/components/shared/AnimatedCounter';
 import DifficultyDonut from '@/components/charts/DifficultyDonut';
@@ -130,7 +130,7 @@ const METRICS = [
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Leaderboard() {
   const { user }                          = useAuthStore();
-  const { classData, loading }            = useClassAnalytics();
+  const { data: classData, loading } = useLeaderboard();
   const [metric, setMetric]               = useState('totalSolved');
   const [search, setSearch]               = useState('');
 

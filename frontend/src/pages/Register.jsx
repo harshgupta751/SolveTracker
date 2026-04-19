@@ -1,3 +1,4 @@
+import GoogleButton from '@/components/auth/GoogleButton';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,6 +84,20 @@ export default function Register() {
                 {label}
               </motion.button>
             ))}
+          </div>
+
+                  <GoogleButton role={form.role} />
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full" style={{ borderTop: '1px solid var(--border)' }} />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="px-3 text-xs"
+                    style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
+                or register with email
+              </span>
+            </div>
           </div>
 
           <AnimatePresence>

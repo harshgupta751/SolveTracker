@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, TrendingUp, BookOpen, BarChart3,
   ChevronRight, Copy, Check, Search, ArrowUpDown,
-  Trophy, AlertTriangle, Clock, Wifi, WifiOff, Edit
+  Trophy, AlertTriangle, Clock, Wifi, WifiOff, Edit, Eye, EyeOff, Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAuthStore from '@/store/authStore';
@@ -12,9 +12,11 @@ import { useClassAnalytics } from '@/hooks/useAnalytics';
 import { StatSkeleton, CardSkeleton } from '@/components/shared/LoadingPulse';
 import ClassHeatmap from '@/components/charts/ClassHeatmap';
 import DifficultyDonut from '@/components/charts/DifficultyDonut';
-import ClaudeInsight from '@/components/ai/ClaudeInsight';
+import GeminiInsight from '@/components/ai/ClaudeInsight';
 import AnimatedCounter from '@/components/shared/AnimatedCounter';
-import { formatNumber, relativeTime } from '@/lib/utils';
+import { formatNumber, relativeTime, formatDate } from '@/lib/utils';
+import { useSheets } from '@/hooks/useSheets';
+
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, icon: Icon, color, delay = 0 }) {
@@ -156,6 +158,7 @@ export default function TeacherDashboard() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { classData, topicData, loading, error, refetch } = useClassAnalytics();
+  const { sheets, loading: sheetsLoading, removeSheet } = useSheets();
 
   const [search,    setSearch]    = useState('');
   const [sortBy,    setSortBy]    = useState('totalSolved');
@@ -290,7 +293,7 @@ export default function TeacherDashboard() {
           transition={{ delay: 0.32 }}
           className="card p-5 lg:col-span-2"
         >
-          <ClaudeInsight
+          <GeminiInsight
             mode="teacher"
             classData={classData}
             topicData={topicData}
@@ -444,6 +447,187 @@ export default function TeacherDashboard() {
           </div>
         )}
       </motion.div>
+      {/* ── My Sheets Section ── */}
+<motion.div
+  initial={{ opacity: 0, y: 16 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.45 }}
+  className="card overflow-hidden"
+>
+  {/* Section header */}
+  <div
+    className="flex items-center justify-between px-5 py-4"
+    style={{ borderBottom: '1px solid var(--border)' }}
+  >
+    <div className="flex items-center gap-2">
+      <BookOpen size={15} style={{ color: 'var(--accent)' }} />
+      <h3
+        className="font-display font-bold text-sm"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        My Problem Sheets
+      </h3>
+      <span
+        className="text-xs font-code px-2 py-0.5 rounded-full"
+        style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}
+      >
+        {sheets.length}
+      </span>
+    </div>
+
+    <motion.button
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={() => navigate('/teacher/create-sheet')}
+      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+      style={{
+        background: 'var(--accent)',
+        color: '#0a0a0f',
+      }}
+    >
+      <Plus size={12} /> New Sheet
+    </motion.button>
+  </div>
+
+  {/* Sheet rows */}
+  {sheetsLoading ? (
+    <div className="p-5">
+      <CardSkeleton lines={3} />
+    </div>
+  ) : !sheets.length ? (
+    <div className="py-14 text-center">
+      <BookOpen size={28} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+      <p className="font-code text-sm" style={{ color: 'var(--text-muted)' }}>
+        No sheets yet. Create your first problem set!
+      </p>
+      <motion.button
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={() => navigate('/teacher/create-sheet')}
+        className="mt-4 px-5 py-2 rounded-xl text-xs font-semibold"
+        style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent)' }}
+      >
+        + Create Sheet
+      </motion.button>
+    </div>
+  ) : (
+    <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+      {sheets.map((sheet, i) => {
+        const diffCounts = { Easy: 0, Medium: 0, Hard: 0 };
+        (sheet.problems ?? []).forEach((p) => diffCounts[p.difficulty]++);
+
+        return (
+          <motion.div
+            key={sheet._id}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="flex items-center gap-4 px-5 py-4"
+            style={{ borderBottom: '1px solid var(--border)' }}
+          >
+            {/* Sheet info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className="font-semibold text-sm truncate"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {sheet.title}
+                </span>
+
+                {/* Published / Draft badge */}
+                <span
+                  className="text-xs font-code px-2 py-0.5 rounded-full flex items-center gap-1"
+                  style={{
+                    background: sheet.isPublished ? 'var(--easy-bg)' : 'var(--border)',
+                    color: sheet.isPublished ? 'var(--easy)' : 'var(--text-muted)',
+                    border: sheet.isPublished ? '1px solid var(--easy)' : '1px solid transparent',
+                  }}
+                >
+                  {sheet.isPublished
+                    ? <><Eye size={9} /> Published</>
+                    : <><EyeOff size={9} /> Draft</>
+                  }
+                </span>
+              </div>
+
+              {/* Meta: problem count + difficulty breakdown + due date */}
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
+                <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
+                  {sheet.problems?.length ?? 0} problems
+                </span>
+                {Object.entries(diffCounts)
+                  .filter(([, c]) => c > 0)
+                  .map(([d, c]) => (
+                    <span
+                      key={d}
+                      className="text-xs font-code"
+                      style={{ color: `var(--${d.toLowerCase()})` }}
+                    >
+                      {c} {d}
+                    </span>
+                  ))}
+                {sheet.dueDate && (
+                  <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
+                    Due {formatDate(sheet.dueDate)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* ✅ THIS IS THE EDIT BUTTON */}
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.94 }}
+                onClick={() => navigate(`/teacher/edit-sheet/${sheet._id}`)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+                style={{
+                  background: 'var(--bg-2)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-secondary)',
+                }}
+                title="Edit sheet"
+              >
+                <Edit size={12} /> Edit
+              </motion.button>
+
+              {/* Delete button */}
+              <motion.button
+                whileHover={{ scale: 1.08, borderColor: 'var(--hard)' }}
+                whileTap={{ scale: 0.94 }}
+                onClick={async () => {
+                  if (
+                    window.confirm(
+                      `Delete "${sheet.title}"? This cannot be undone.`
+                    )
+                  ) {
+                    try {
+                      await removeSheet(sheet._id);
+                      toast.success('Sheet deleted');
+                    } catch {
+                      toast.error('Delete failed');
+                    }
+                  }
+                }}
+                className="flex items-center justify-center w-8 h-8 rounded-xl transition-all"
+                style={{
+                  background: 'var(--hard-bg)',
+                  border: '1px solid transparent',
+                  color: 'var(--hard)',
+                }}
+                title="Delete sheet"
+              >
+                <Trash2 size={12} />
+              </motion.button>
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  )}
+</motion.div>
     </div>
   );
 }

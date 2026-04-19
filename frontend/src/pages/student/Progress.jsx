@@ -11,7 +11,7 @@ import SolvedRadial from '@/components/charts/SolvedRadar';
 import TopicBreakdown from '@/components/charts/TopicBreakdown';
 import ProgressLine from '@/components/charts/ProgressLine';
 import StreakCalendar from '@/components/charts/StreakCalendar';
-import ClaudeInsight from '@/components/ai/ClaudeInsight';
+import GeminiInsight from '@/components/ai/ClaudeInsight';
 import AnimatedCounter from '@/components/shared/AnimatedCounter';
 import { StatSkeleton, CardSkeleton } from '@/components/shared/LoadingPulse';
 import useAuthStore from '@/store/authStore';
@@ -304,7 +304,7 @@ export default function Progress() {
 
       {/* Claude personal insight */}
       <Card title="" delay={0.42}>
-        <ClaudeInsight
+        <GeminiInsight
           mode="student"
           stats={lc}
           username={user?.leetcodeUsername ?? ''}

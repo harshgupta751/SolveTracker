@@ -6,7 +6,7 @@ import SolvedRadial from '@/components/charts/SolvedRadar';
 import TopicBreakdown from '@/components/charts/TopicBreakdown';
 import ProgressLine from '@/components/charts/ProgressLine';
 import StreakCalendar from '@/components/charts/StreakCalendar';
-import ClaudeInsight from '@/components/ai/ClaudeInsight';
+import GeminiInsight from '@/components/ai/ClaudeInsight';
 import { StatSkeleton, CardSkeleton } from '@/components/shared/LoadingPulse';
 import AnimatedCounter from '@/components/shared/AnimatedCounter';
 import { relativeTime, formatNumber } from '@/lib/utils';
@@ -131,7 +131,7 @@ export default function StudentView() {
       {/* Claude insight for this student */}
       <Card title="" delay={0.42}>
         {lc ? (
-          <ClaudeInsight
+          <GeminiInsight
             mode="student"
             stats={lc}
             username={lc?.username ?? ''}

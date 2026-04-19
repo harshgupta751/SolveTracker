@@ -1,25 +1,21 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard, BookOpen, TrendingUp, Users,
-  PlusSquare, UserCircle, LogOut, ChevronRight, Zap, Trophy
-} from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, Users, PlusSquare, Trophy, LogOut, ChevronRight, Zap } from 'lucide-react';
 import { useState } from 'react';
 import useAuthStore from '@/store/authStore';
 import ThemeToggle from './ThemeToggle';
 
 const studentNav = [
-  { to: '/student',          icon: LayoutDashboard, label: 'Dashboard',  end: true },
-  { to: '/student/sheets',   icon: BookOpen,        label: 'My Sheets' },
-  { to: '/student/progress', icon: TrendingUp,      label: 'Progress' },
-  { to: '/student/leaderboard', icon: Trophy, label: 'Leaderboard' },
+  { to: '/student',             icon: LayoutDashboard, label: 'Dashboard',   end: true },
+  { to: '/student/sheets',      icon: BookOpen,        label: 'My Sheets' },
+  { to: '/student/progress',    icon: TrendingUp,      label: 'Progress' },
+  { to: '/student/leaderboard', icon: Trophy,          label: 'Leaderboard' },
 ];
 
 const teacherNav = [
-  { to: '/teacher',                 icon: LayoutDashboard, label: 'Overview',    end: true },
-  { to: '/teacher/create-sheet',    icon: PlusSquare,      label: 'New Sheet' },
-  { to: '/teacher/students',        icon: Users,           label: 'Students' },
-  { to: '/teacher/leaderboard', icon: Trophy, label: 'Leaderboard' },
+  { to: '/teacher',              icon: LayoutDashboard, label: 'Overview',    end: true },
+  { to: '/teacher/create-sheet', icon: PlusSquare,      label: 'New Sheet' },
+  { to: '/teacher/leaderboard',  icon: Trophy,          label: 'Leaderboard' },
 ];
 
 export default function Sidebar() {

@@ -205,7 +205,7 @@ function SheetCard({ sheet, progress, onToggle, delay = 0 }) {
                         <span className="font-code text-xs" style={{ color: 'var(--text-muted)' }}>
                           {String(realIdx + 1).padStart(2, '0')}
                         </span>
-                        
+                        <a
                           href={problem.url} target="_blank" rel="noreferrer"
                           className="text-sm font-medium hover:underline flex items-center gap-1 group-hover:text-[var(--accent)] transition-colors"
                           style={{
@@ -250,40 +250,11 @@ function SheetCard({ sheet, progress, onToggle, delay = 0 }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function MySheets() {
-  const { sheets, loading, markComplete } = useSheets();
+const { sheets, loading, toggleProblem, getSheetProgress } = useSheets();
   const [localProgress, setLocalProgress] = useState({});
 
-  const handleToggle = async (sheetId, idx) => {
-    // Optimistic update
-    setLocalProgress(prev => {
-      const current = new Set(prev[sheetId] ?? []);
-      if (current.has(idx)) current.delete(idx);
-      else current.add(idx);
-      return { ...prev, [sheetId]: [...current] };
-    });
+const handleToggle = (sheetId, idx) => toggleProblem(sheetId, idx);
 
-    try {
-      const updated = await markComplete(sheetId, idx);
-      // Sync server state back
-      const serverSP = updated.find(sp => sp.sheet === sheetId || sp.sheet?._id === sheetId);
-      if (serverSP) {
-        setLocalProgress(prev => ({ ...prev, [sheetId]: serverSP.completedProblems }));
-      }
-    } catch {
-      toast.error('Failed to save progress');
-      // Revert
-      setLocalProgress(prev => {
-        const current = new Set(prev[sheetId] ?? []);
-        if (current.has(idx)) current.delete(idx);
-        else current.add(idx);
-        return { ...prev, [sheetId]: [...current] };
-      });
-    }
-  };
-
-  const getProgress = (sheetId) => ({
-    completedProblems: localProgress[sheetId] ?? [],
-  });
 
   // Summary stats
   const totalProblems = sheets.reduce((s, sh) => s + sh.problems.length, 0);
@@ -351,7 +322,7 @@ export default function MySheets() {
             <SheetCard
               key={sheet._id}
               sheet={sheet}
-              progress={getProgress(sheet._id)}
+              progress={{ completedProblems: getSheetProgress(sheet._id) }}
               onToggle={handleToggle}
               delay={i * 0.08}
             />

@@ -224,3 +224,35 @@ input:-webkit-autofill:focus {
   main { padding: 0 !important; }
   .card { border: 1px solid #e2e8f0 !important; box-shadow: none !important; }
 }
+
+
+/* ─── Native select dark mode ────────────────────────────────────────── */
+select {
+  background-color: var(--surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+  color-scheme: inherit;
+}
+
+select option {
+  background-color: var(--surface);
+  color: var(--text-primary);
+}
+
+/* ─── Number input arrows ────────────────────────────────────────────── */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  opacity: 0.4;
+  filter: var(--theme, none);
+}
+
+/* ─── Date input dark mode ───────────────────────────────────────────── */
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: var(--theme, none);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.dark input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

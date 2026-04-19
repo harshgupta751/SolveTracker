@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { ArrowRight, Zap, Brain, BarChart3, Users, Code2, RefreshCw } from 'lucide-react';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import useThemeStore from '@/store/themeStore';
@@ -34,6 +34,8 @@ export default function Landing() {
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef });
   const y = useTransform(scrollYProgress, [0, 1], [0, -80]);
+
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: 'var(--bg)' }}>
@@ -265,7 +267,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="px-6 py-8 text-center" style={{ borderTop: '1px solid var(--border)' }}>
         <span className="font-code text-xs" style={{ color: 'var(--text-muted)' }}>
-          DSA&amp;Chill © 2025 — Built with ⚡ for the grind
+          DSA&amp;Chill © {currentYear} — Built with ⚡ for the grind
         </span>
       </footer>
     </div>

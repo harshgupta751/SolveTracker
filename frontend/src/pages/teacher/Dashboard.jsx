@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, TrendingUp, BookOpen, BarChart3,
-  ChevronRight, Copy, Check, Search, ArrowUpDown,
+  ChevronRight, Search, ArrowUpDown,
   Trophy, AlertTriangle, Clock, Wifi, WifiOff, Edit, Eye, EyeOff, Plus, Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -163,14 +163,7 @@ export default function TeacherDashboard() {
   const [search,    setSearch]    = useState('');
   const [sortBy,    setSortBy]    = useState('totalSolved');
   const [sortDir,   setSortDir]   = useState('desc');
-  const [codeCopied, setCodeCopied] = useState(false);
 
-  const copyClassCode = () => {
-    navigator.clipboard.writeText(user?.myClassCode ?? '');
-    setCodeCopied(true);
-    toast.success('Class code copied!');
-    setTimeout(() => setCodeCopied(false), 2000);
-  };
 
   const toggleSort = (col) => {
     if (sortBy === col) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
@@ -227,22 +220,6 @@ export default function TeacherDashboard() {
             {classData.length} enrolled · {synced.length} synced
           </p>
         </div>
-
-        <motion.button
-          onClick={copyClassCode}
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.97 }}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-code font-semibold transition-all self-start"
-          style={{
-            background:  'var(--accent-glow)',
-            border:      '1px solid var(--accent)',
-            color:       'var(--accent)',
-          }}
-        >
-          {codeCopied ? <Check size={14} /> : <Copy size={14} />}
-          Class Code: <strong>{user?.myClassCode ?? '—'}</strong>
-          <span className="text-xs opacity-60">(share with students)</span>
-        </motion.button>
       </motion.div>
 
       {/* ── Stat cards ── */}

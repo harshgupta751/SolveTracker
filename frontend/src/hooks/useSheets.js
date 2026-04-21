@@ -112,6 +112,16 @@ export function useSheets() {
     [sheetProgress]
   );
 
+  const getVerifiedProblems = useCallback(
+  (sheetId) => {
+    const sp = sheetProgress.find(
+      (s) => s.sheet === sheetId || s.sheet?._id === sheetId
+    );
+    return sp?.verifiedProblems ?? [];
+  },
+  [sheetProgress]
+);
+
   return {
     sheets,
     sheetProgress,
@@ -122,5 +132,6 @@ export function useSheets() {
     removeSheet,
     toggleProblem,
     getSheetProgress,
+    getVerifiedProblems, 
   };
 }

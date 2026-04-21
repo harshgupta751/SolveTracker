@@ -35,6 +35,7 @@ export const leetcodeAPI = {
   sync:            ()   => api.post('/leetcode/sync'),
   getStats:        ()   => api.get('/leetcode/stats'),
   getStudentStats: (id) => api.get(`/leetcode/stats/${id}`),
+  verifyProblem:   (titleSlug, sheetId, idx)    => api.post('/leetcode/verify-problem', { titleSlug, sheetId, problemIdx: idx }),
 };
 
 export const sheetsAPI = {

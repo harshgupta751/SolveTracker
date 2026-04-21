@@ -160,3 +160,24 @@ export const verifyLeetCodeUser = async (username) => {
     return false;
   }
 };
+
+// Add this export at the bottom of the file, after verifyLeetCodeUser
+
+export const verifyProblemSolved = async (username, titleSlug) => {
+  try {
+    const data = await gql(
+      `query($username: String!, $limit: Int!) {
+        recentAcSubmissionList(username: $username, limit: $limit) {
+          titleSlug
+          timestamp
+        }
+      }`,
+      { username, limit: 100 }
+    );
+    const list  = data?.recentAcSubmissionList ?? [];
+    const found = list.find((s) => s.titleSlug === titleSlug);
+    return { solved: !!found, timestamp: found?.timestamp ?? null };
+  } catch (err) {
+    return { solved: false, error: err.message };
+  }
+};

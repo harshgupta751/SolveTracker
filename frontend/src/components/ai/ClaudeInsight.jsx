@@ -306,18 +306,6 @@ export default function GeminiInsight({
               </motion.div>
             ))}
 
-            {/* Powered-by footer */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-xs font-code text-center pt-1"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Powered by{' '}
-              <span style={{ color: GEMINI_COLOR }}>Gemini 2.5 Flash</span>
-              {' '}· updates on refresh
-            </motion.p>
           </motion.div>
         )}
 

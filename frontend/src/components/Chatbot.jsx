@@ -1,9 +1,69 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence }                   from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User, Minimize2, Sparkles } from 'lucide-react';
-import { aiAPI }          from '@/api';
-import useAuthStore       from '@/store/authStore';
+import { aiAPI }            from '@/api';
+import useAuthStore         from '@/store/authStore';
 import { useLeetcodeStats } from '@/hooks/useLeetcode';
+
+// ─── Markdown parser ──────────────────────────────────────────────────────────
+function parseMarkdown(text) {
+  const tokens = [];
+  const regex  = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+    const raw = match[0];
+    if (raw.startsWith('**'))      tokens.push({ type: 'bold',   content: raw.slice(2, -2) });
+    else if (raw.startsWith('`'))  tokens.push({ type: 'code',   content: raw.slice(1, -1) });
+    else                           tokens.push({ type: 'italic', content: raw.slice(1, -1) });
+    lastIndex = match.index + raw.length;
+  }
+  if (lastIndex < text.length) tokens.push({ type: 'text', content: text.slice(lastIndex) });
+  return tokens;
+}
+
+function ParsedMessage({ content }) {
+  const tokens = parseMarkdown(content);
+  return (
+    <>
+      {tokens.map((token, i) => {
+        if (token.type === 'bold') {
+          return <strong key={i} style={{ fontWeight: 600 }}>{token.content}</strong>;
+        }
+        if (token.type === 'italic') {
+          return <em key={i}>{token.content}</em>;
+        }
+        if (token.type === 'code') {
+          return (
+            <code
+              key={i}
+              style={{
+                background:  'var(--border)',
+                padding:     '1px 5px',
+                borderRadius: 4,
+                fontFamily:  'JetBrains Mono, monospace',
+                fontSize:    '0.88em',
+              }}
+            >
+              {token.content}
+            </code>
+          );
+        }
+        // Plain text — handle newlines
+        return token.content.split('\n').map((line, j) => (
+          <span key={`${i}-${j}`}>
+            {j > 0 && <br />}
+            {line}
+          </span>
+        ));
+      })}
+    </>
+  );
+}
 
 // ─── Typing indicator ─────────────────────────────────────────────────────────
 function TypingDots() {
@@ -28,11 +88,10 @@ function Message({ msg }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0,  scale: 1    }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 200, damping: 22 }}
       className={`flex items-end gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
-      {/* Avatar */}
       <div
         className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs"
         style={{
@@ -42,22 +101,24 @@ function Message({ msg }) {
       >
         {isUser
           ? <User size={11} style={{ color: 'var(--accent)' }} />
-          : <Bot  size={11} style={{ color: '#4285f4'       }} />
+          : <Bot  size={11} style={{ color: '#4285f4' }} />
         }
       </div>
 
-      {/* Bubble */}
       <div
         className="max-w-[78%] px-3 py-2 rounded-2xl text-xs leading-relaxed"
         style={{
-          background: isUser ? 'var(--accent)' : 'var(--bg-2)',
-          color:      isUser ? '#0a0a0f'        : 'var(--text-primary)',
+          background:              isUser ? 'var(--accent)' : 'var(--bg-2)',
+          color:                   isUser ? '#0a0a0f'       : 'var(--text-primary)',
           borderBottomRightRadius: isUser ? 4 : undefined,
           borderBottomLeftRadius:  isUser ? undefined : 4,
-          border:     isUser ? 'none' : '1px solid var(--border)',
+          border:                  isUser ? 'none' : '1px solid var(--border)',
         }}
       >
-        {msg.content}
+        {isUser
+          ? msg.content
+          : <ParsedMessage content={msg.content} />
+        }
       </div>
     </motion.div>
   );
@@ -68,16 +129,14 @@ const SUGGESTIONS = [
   "Explain Dynamic Programming",
   "How to approach graph problems?",
   "Tips to improve acceptance rate",
-  "What's the best way to study Trees?",
-  "How to practice for interviews?",
 ];
 
 // ─── Main Chatbot ─────────────────────────────────────────────────────────────
 export default function Chatbot() {
   const { user }      = useAuthStore();
   const { stats }     = useLeetcodeStats();
-  const [open,    setOpen]    = useState(false);
-  const [messages, setMessages] = useState([
+  const [open,       setOpen]     = useState(false);
+  const [messages,   setMessages] = useState([
     {
       role:    'assistant',
       content: `Hey ${user?.name?.split(' ')[0] ?? 'there'}! 👋 I'm DSA Buddy — your AI coach on DSA&Chill. Ask me anything about algorithms, problem-solving strategies, or the platform! 🚀`,
@@ -86,15 +145,13 @@ export default function Chatbot() {
   const [input,    setInput]   = useState('');
   const [loading,  setLoading] = useState(false);
   const [unread,   setUnread]  = useState(0);
-  const bottomRef  = useRef(null);
-  const inputRef   = useRef(null);
+  const bottomRef = useRef(null);
+  const inputRef  = useRef(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) {
       setUnread(0);
@@ -103,11 +160,11 @@ export default function Chatbot() {
   }, [open]);
 
   const userContext = {
-    name:        user?.name,
-    role:        user?.role,
+    name:             user?.name,
+    role:             user?.role,
     leetcodeUsername: user?.leetcodeUsername,
-    totalSolved: stats?.totalSolved,
-    rank:        stats?.ranking,
+    totalSolved:      stats?.totalSolved,
+    rank:             stats?.ranking,
   };
 
   const sendMessage = useCallback(async (text) => {
@@ -125,15 +182,12 @@ export default function Chatbot() {
         nextMsgs.map((m) => ({ role: m.role, content: m.content })),
         userContext
       );
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: res.data.text },
-      ]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: res.data.text }]);
       if (!open) setUnread((n) => n + 1);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: "Sorry, I'm having trouble connecting. Please try again in a moment 🙏" },
+        { role: 'assistant', content: "Sorry, I'm having trouble connecting. Please try again 🙏" },
       ]);
     } finally {
       setLoading(false);
@@ -154,26 +208,23 @@ export default function Chatbot() {
         {open && (
           <motion.div
             key="chat-window"
-            initial={{ opacity: 0, scale: 0.92, y: 20, originX: 1, originY: 1 }}
-            animate={{ opacity: 1, scale: 1,    y: 0               }}
-            exit={{    opacity: 0, scale: 0.92, y: 20               }}
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1,    y: 0   }}
+            exit={{    opacity: 0, scale: 0.92, y: 20   }}
             transition={{ type: 'spring', stiffness: 260, damping: 26 }}
             className="fixed bottom-24 right-5 z-50 flex flex-col rounded-2xl overflow-hidden"
             style={{
-              width:     364,
-              height:    520,
+              width:      364,
+              height:     520,
               background: 'var(--surface)',
-              border:    '1px solid var(--border)',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
+              border:     '1px solid var(--border)',
+              boxShadow:  '0 24px 64px rgba(0,0,0,0.35)',
             }}
           >
-            {/* Header */}
+            {/* Header — no AI model mention */}
             <div
               className="flex items-center justify-between px-4 py-3 flex-shrink-0"
-              style={{
-                borderBottom: '1px solid var(--border)',
-                background:   'var(--surface)',
-              }}
+              style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}
             >
               <div className="flex items-center gap-2.5">
                 <div
@@ -189,7 +240,7 @@ export default function Chatbot() {
                   <div className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--easy)' }} />
                     <p className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
-                      Powered by Gemini 2.5 Flash
+                      Your AI coding coach
                     </p>
                   </div>
                 </div>
@@ -197,19 +248,17 @@ export default function Chatbot() {
 
               <div className="flex items-center gap-1">
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                   onClick={() => setOpen(false)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   <Minimize2 size={13} />
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                   onClick={() => setOpen(false)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   <X size={13} />
@@ -241,14 +290,13 @@ export default function Chatbot() {
               <div ref={bottomRef} />
             </div>
 
-            {/* Suggestions — only shown when only the greeting is visible */}
+            {/* Suggestions */}
             {messages.length === 1 && (
               <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-                {SUGGESTIONS.slice(0, 3).map((s) => (
+                {SUGGESTIONS.map((s) => (
                   <motion.button
                     key={s}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                     onClick={() => sendMessage(s)}
                     className="text-xs px-2.5 py-1.5 rounded-xl transition-all"
                     style={{
@@ -287,9 +335,8 @@ export default function Chatbot() {
               <motion.button
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || loading}
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.94 }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-40"
+                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
+                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 disabled:opacity-40"
                 style={{ background: '#4285f4', color: '#fff' }}
               >
                 <Send size={13} />
@@ -304,34 +351,34 @@ export default function Chatbot() {
         onClick={() => setOpen((v) => !v)}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
-        animate={{ boxShadow: open ? 'none' : '0 0 0 0 rgba(66,133,244,0.4)' }}
         className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-2xl flex items-center justify-center"
         style={{
           background: open ? 'var(--bg-2)' : '#4285f4',
           border:     open ? '1px solid var(--border)' : 'none',
           boxShadow:  open ? 'none' : '0 8px 32px rgba(66,133,244,0.45)',
         }}
-        aria-label="Open DSA Buddy chat"
+        aria-label="Open DSA Buddy"
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
-            <motion.div key="x"   initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+            <motion.div key="x"
+              initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
               <X size={20} style={{ color: 'var(--text-secondary)' }} />
             </motion.div>
           ) : (
-            <motion.div key="bot" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Sparkles size={22} style={{ color: '#fff' }} />
+            <motion.div key="bot"
+              initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+              <MessageCircle size={22} style={{ color: '#fff' }} />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Unread badge */}
         <AnimatePresence>
           {unread > 0 && !open && (
             <motion.span
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
+              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
               className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
               style={{ background: 'var(--hard)', color: '#fff' }}
             >

@@ -37,6 +37,7 @@ const progressSchema = new mongoose.Schema(
       {
         sheet:            { type: mongoose.Schema.Types.ObjectId, ref: 'Sheet' },
         completedProblems: [{ type: Number }], // array of problem indices
+        verifiedProblems:  [{ type: Number }],
         lastUpdated:      { type: Date, default: Date.now },
       },
     ],

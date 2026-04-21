@@ -1,24 +1,37 @@
-import express from 'express';
-import { OAuth2Client } from 'google-auth-library';
-import User from '../models/User.js';
-import Progress from '../models/Progress.js';
+import express             from 'express';
+import { OAuth2Client }    from 'google-auth-library';
+import { nanoid }          from 'nanoid';
+import User                from '../models/User.js';
+import Progress            from '../models/Progress.js';
 import { signToken, verifyToken } from '../middleware/auth.js';
-import { nanoid } from 'nanoid'; // npm i nanoid
 
-const router = express.Router();
+const router     = express.Router();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// ─── Helper: build safe user payload ─────────────────────────────────────────
 const userPayload = (user) => ({
-  _id:     user._id,
-  name:    user.name,
-  email:   user.email,
-  avatar:  user.avatar,
-  role:    user.role,
+  _id:              user._id,
+  name:             user.name,
+  email:            user.email,
+  avatar:           user.avatar,
+  role:             user.role,
   leetcodeUsername: user.leetcodeUsername,
-  classCode:   user.classCode,
-  myClassCode: user.myClassCode,
+  classCode:        user.classCode,
+  myClassCode:      user.myClassCode,
 });
+
+// ─── Helper: auto-enroll if teacher invited this email ────────────────────────
+async function checkAndEnroll(email, userId) {
+  const teacher = await User.findOne({
+    role:          'teacher',
+    invitedEmails: email,
+  });
+  if (teacher) {
+    await User.findByIdAndUpdate(userId, { classCode: teacher.myClassCode });
+    // Remove from pending list
+    teacher.invitedEmails = teacher.invitedEmails.filter((e) => e !== email);
+    await teacher.save();
+  }
+}
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -31,10 +44,15 @@ router.post('/register', async (req, res) => {
     if (role === 'teacher') userData.myClassCode = nanoid(8).toUpperCase();
 
     const user = await User.create(userData);
-    await Progress.create({ student: user._id }); // scaffold progress doc
+    await Progress.create({ student: user._id });
 
-    const token = signToken(user._id);
-    res.status(201).json({ token, user: userPayload(user) });
+    // Auto-enroll if a teacher invited this email
+    if (role === 'student') await checkAndEnroll(email, user._id);
+
+    // Re-fetch to get updated classCode
+    const freshUser = await User.findById(user._id);
+    const token     = signToken(freshUser._id);
+    res.status(201).json({ token, user: userPayload(freshUser) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -55,12 +73,12 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ─── Google OAuth (ID-token flow) ────────────────────────────────────────────
+// ─── Google OAuth ─────────────────────────────────────────────────────────────
 router.post('/google', async (req, res) => {
   try {
-    const { credential, role } = req.body; // credential = Google ID token from frontend
+    const { credential, role } = req.body;
     const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
+      idToken:  credential,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const { sub: googleId, email, name, picture } = ticket.getPayload();
@@ -71,9 +89,11 @@ router.post('/google', async (req, res) => {
       if (userData.role === 'teacher') userData.myClassCode = nanoid(8).toUpperCase();
       user = await User.create(userData);
       await Progress.create({ student: user._id });
+      if (userData.role === 'student') await checkAndEnroll(email, user._id);
+      user = await User.findById(user._id);
     } else if (!user.googleId) {
       user.googleId = googleId;
-      user.avatar = picture;
+      user.avatar   = picture;
       await user.save();
     }
 
@@ -89,14 +109,12 @@ router.get('/me', verifyToken, (req, res) => {
   res.json({ user: userPayload(req.user) });
 });
 
-// ─── Update profile (set leetcodeUsername, join class) ───────────────────────
+// ─── Update profile ───────────────────────────────────────────────────────────
 router.patch('/profile', verifyToken, async (req, res) => {
   try {
-    const { leetcodeUsername, classCode } = req.body;
+    const { leetcodeUsername } = req.body;
     const updates = {};
     if (leetcodeUsername) updates.leetcodeUsername = leetcodeUsername.trim();
-    if (classCode && req.user.role === 'student') updates.classCode = classCode.toUpperCase();
-
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true });
     res.json({ user: userPayload(user) });
   } catch (err) {

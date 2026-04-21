@@ -14,6 +14,7 @@ const studentNav = [
 
 const teacherNav = [
   { to: '/teacher',              icon: LayoutDashboard, label: 'Overview',    end: true },
+  { to: '/teacher/students',     icon: Users,           label: 'Students' },   // ← now real page
   { to: '/teacher/create-sheet', icon: PlusSquare,      label: 'New Sheet' },
   { to: '/teacher/leaderboard',  icon: Trophy,          label: 'Leaderboard' },
 ];

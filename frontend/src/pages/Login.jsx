@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Zap, Mail, Lock } from 'lucide-react';
@@ -12,6 +12,8 @@ export default function Login() {
   const { login, loading, error, clearError } = useAuthStore();
   const [form, setForm] = useState({ email: '', password: '' });
   const [show, setShow] = useState(false);
+
+    const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   const handleChange = (e) => {
     clearError();
@@ -110,7 +112,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="font-code text-xs" style={{ color: 'var(--text-muted)' }}>
-          DSA&amp;Chill © 2025
+          DSA&amp;Chill © {currentYear}
         </div>
       </motion.div>
 

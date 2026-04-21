@@ -13,6 +13,7 @@ import TeacherDashboard  from '@/pages/teacher/Dashboard';
 import CreateSheet       from '@/pages/teacher/CreateSheet';
 import SheetEditor       from '@/pages/teacher/SheetEditor';
 import StudentView       from '@/pages/teacher/StudentView';
+import ManageStudents from '@/pages/teacher/ManageStudents';
 import Leaderboard       from '@/pages/Leaderboard';
 import AppLayout         from '@/components/layout/AppLayout';
 
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="edit-sheet/:sheetId"   element={<SheetEditor />} />
         <Route path="student/:studentId"    element={<StudentView />} />
         <Route path="leaderboard"           element={<Leaderboard />} />
+        <Route path="students" element={<ManageStudents />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

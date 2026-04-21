@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, TrendingUp, BookOpen, BarChart3,
   ChevronRight, Copy, Check, Search, ArrowUpDown,
-  Trophy, AlertTriangle, Clock, Wifi, WifiOff, Edit, Eye, EyeOff, Plus
+  Trophy, AlertTriangle, Clock, Wifi, WifiOff, Edit, Eye, EyeOff, Plus, Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAuthStore from '@/store/authStore';

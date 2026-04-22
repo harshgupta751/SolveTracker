@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/yourusername/dsaandchill/main/frontend/public/favicon.svg" width="32" height="32" /> SolveTracker
+# <img src="https://raw.githubusercontent.com/harshgupta751/SolveTracker/main/frontend/public/favicon.svg" width="32" height="32" /> SolveTracker
 
 > **Your AI-powered DSA learning system. Sync. Analyze. Crack placements.**
 

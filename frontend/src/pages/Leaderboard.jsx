@@ -366,42 +366,41 @@ export default function Leaderboard() {
                       </div>
                     </div>
 
-                    {/* Donut */}
-                    <div className="hidden sm:flex flex-shrink-0">
-                      <DifficultyDonut
-                        easy={item.leetcode?.easySolved}
-                        medium={item.leetcode?.mediumSolved}
-                        hard={item.leetcode?.hardSolved}
-                        size={44}
-                      />
-                    </div>
 
                     {/* Diff counts */}
-                    <div className="hidden md:flex items-center gap-4 flex-shrink-0">
-                      {[
-                        { val: item.leetcode?.easySolved,   color: 'var(--easy)'   },
-                        { val: item.leetcode?.mediumSolved, color: 'var(--medium)' },
-                        { val: item.leetcode?.hardSolved,   color: 'var(--hard)'   },
-                      ].map(({ val, color }, j) => (
-                        <span key={j} className="font-display font-bold text-sm w-8 text-center"
-                              style={{ color }}>
-                          {val ?? 0}
-                        </span>
-                      ))}
-                    </div>
+<div className="hidden md:flex items-center gap-3 flex-shrink-0">
+  {[
+    { val: item.leetcode?.easySolved,   color: 'var(--easy)',   label: 'E' },
+    { val: item.leetcode?.mediumSolved, color: 'var(--medium)', label: 'M' },
+    { val: item.leetcode?.hardSolved,   color: 'var(--hard)',   label: 'H' },
+  ].map(({ val, color, label }) => (
+    <div key={label} className="flex flex-col items-center" style={{ minWidth: 28 }}>
+      <span className="font-display font-bold text-sm" style={{ color }}>
+        {val ?? 0}
+      </span>
+      <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
+        {label}
+      </span>
+    </div>
+  ))}
+</div>
 
-                    {/* Active metric */}
-                    <div className="text-right flex-shrink-0 min-w-[60px]">
-                      <p className="font-display font-black text-xl"
-                         style={{ color: rc ? rc.text : 'var(--text-primary)' }}>
-                        {metric === 'acceptanceRate'
-                          ? `${metricVal ?? 0}%`
-                          : (metricVal ?? 0)}
-                      </p>
-                      <p className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
-                        {METRICS.find(m => m.key === metric)?.label}
-                      </p>
-                    </div>
+{/* Separator */}
+<div className="hidden md:block w-px h-8 flex-shrink-0"
+     style={{ background: 'var(--border)' }} />
+
+{/* Active metric — keep as-is but add flex-shrink-0 and min-width */}
+<div className="text-right flex-shrink-0" style={{ minWidth: 56 }}>
+  <p className="font-display font-black text-xl"
+     style={{ color: rc ? rc.text : 'var(--text-primary)' }}>
+    {metric === 'acceptanceRate'
+      ? `${metricVal ?? 0}%`
+      : (metricVal ?? 0)}
+  </p>
+  <p className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
+    {METRICS.find(m => m.key === metric)?.label}
+  </p>
+</div>
 
                     {/* Sync indicator */}
                     <div className="flex-shrink-0">

@@ -1,314 +1,363 @@
-import { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, RefreshCw, ChevronDown, ChevronUp, Zap } from 'lucide-react';
-import { aiAPI } from '@/api';
-import toast from 'react-hot-toast';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence }                   from 'framer-motion';
+import {
+  Brain, RefreshCw, AlertCircle, Zap, TrendingUp,
+  ChevronDown, ChevronUp,
+} from 'lucide-react';
+import { aiAPI }      from '@/api';
+import useAuthStore   from '@/store/authStore';
 
-// ─── Prompt builders ──────────────────────────────────────────────────────────
+// ─── Cache ────────────────────────────────────────────────────────────────────
+const CACHE_V   = 'v3';
+const CACHE_TTL = 8 * 60 * 60 * 1000; // 8 h
+const cKey = (uid, mode) => `dac_ins_${CACHE_V}_${uid}_${mode}`;
 
-const buildStudentPrompt = (stats, username) => `
-You are an expert DSA (Data Structures & Algorithms) coach analyzing a LeetCode user's performance.
-
-Student: ${username ?? 'Unknown'}
-Total Solved: ${stats.totalSolved} | Easy: ${stats.easySolved} | Medium: ${stats.mediumSolved} | Hard: ${stats.hardSolved}
-Acceptance Rate: ${stats.acceptanceRate}% | Global Rank: #${stats.ranking?.toLocaleString() ?? 'N/A'}
-Top Topics (solved count): ${
-  Object.entries(
-    stats.topicStats instanceof Map
-      ? Object.fromEntries(stats.topicStats)
-      : stats.topicStats ?? {}
-  )
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([t, c]) => `${t}(${c})`)
-    .join(', ') || 'None yet'
-}
-Recent Submissions (last 5): ${
-  (stats.recentSubmissions ?? [])
-    .slice(0, 5)
-    .map((s) => s.title)
-    .join(', ') || 'None'
-}
-
-Task: Give exactly 3 concise, actionable coaching insights (1-2 sentences each).
-Rules:
-- Return ONLY a valid JSON array of exactly 3 strings.
-- No markdown, no code fences, no explanation outside the array.
-- Each insight must be specific to this student's actual numbers.
-
-Example output:
-["Insight about strength...", "Insight about weakness...", "Concrete next step..."]
-`.trim();
-
-const buildTeacherPrompt = (classData, topicData) => {
-  const synced  = classData.filter((d) => d.leetcode?.lastSynced);
-  const avgSolved = synced.length
-    ? Math.round(
-        synced.reduce((s, d) => s + (d.leetcode?.totalSolved ?? 0), 0) /
-          synced.length
-      )
-    : 0;
-  const weakTopics   = [...topicData].sort((a, b) => a.avg - b.avg).slice(0, 3).map((t) => t.topic);
-  const strongTopics = [...topicData].sort((a, b) => b.avg - a.avg).slice(0, 3).map((t) => t.topic);
-
-  return `
-You are an expert DSA instructor reviewing class-level performance data.
-
-Class Size: ${classData.length} students | Synced: ${synced.length}
-Average Problems Solved per Student: ${avgSolved}
-Weakest Topics (lowest avg solved): ${weakTopics.join(', ') || 'N/A'}
-Strongest Topics (highest avg solved): ${strongTopics.join(', ') || 'N/A'}
-
-Task: Give exactly 3 actionable class-level coaching insights for the teacher.
-Rules:
-- Return ONLY a valid JSON array of exactly 3 strings.
-- No markdown, no code fences, no explanation outside the array.
-- Be specific — reference the actual weak/strong topics by name.
-
-Example output:
-["Class strength insight...", "Urgent topic to address...", "Concrete action to take..."]
-`.trim();
+const readCache = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    if (Date.now() - c.ts > CACHE_TTL) return null;
+    return c;
+  } catch { return null; }
+};
+const writeCache = (key, data, sig) => {
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, ts: Date.now(), sig }));
+  } catch {}
 };
 
-// ─── Gemini branding colors ───────────────────────────────────────────────────
-// Gemini brand uses a blue-to-purple gradient, we'll reflect that in accent
-const GEMINI_COLOR  = '#4285f4'; // Google Blue
-const insightColors = ['var(--easy)', 'var(--medium)', 'var(--accent)'];
-const insightIcons  = ['💡', '🎯', '🚀'];
+// ─── Category config ──────────────────────────────────────────────────────────
+const CAT = {
+  strength:    { color: 'var(--easy)',    label: 'Strength'          },
+  weakness:    { color: 'var(--medium)',  label: 'Focus Area'        },
+  interview:   { color: '#818cf8',        label: 'Interview Prep'    },
+  daily:       { color: 'var(--accent)',  label: "Today's Task"      },
+  pattern:     { color: '#38bdf8',        label: 'Pattern'           },
+  motivation:  { color: 'var(--hard)',    label: 'Challenge'         },
+  class:       { color: 'var(--accent)',  label: 'Class Health'      },
+  action:      { color: 'var(--medium)',  label: 'Action Item'       },
+  risk:        { color: 'var(--hard)',    label: 'Risk Alert'        },
+  progress:    { color: '#a78bfa',        label: 'Progress'          },
+};
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Prompts ──────────────────────────────────────────────────────────────────
+const studentPrompt = (stats, username) => {
+  const ts   = stats.topicStats instanceof Map
+    ? Object.fromEntries(stats.topicStats)
+    : stats.topicStats ?? {};
+  const sorted   = Object.entries(ts).sort((a, b) => b[1] - a[1]);
+  const strong   = sorted.slice(0, 4).map(([t, c]) => `${t}(${c})`).join(', ');
+  const weak     = sorted.slice(-4).map(([t, c]) => `${t}(${c})`).join(', ');
+  const recent   = (stats.recentSubmissions ?? []).slice(0, 10).map(s => s.title).join(', ');
+  const hardPct  = stats.totalSolved > 0 ? ((stats.hardSolved / stats.totalSolved) * 100).toFixed(1) : 0;
+
+  return `You are a world-class DSA coach and tech interview expert. Your job is to help this student land their dream software engineering job at top tech companies.
+
+STUDENT DATA:
+Username: @${username ?? 'Unknown'}
+Solved: ${stats.totalSolved} total (Easy: ${stats.easySolved}, Medium: ${stats.mediumSolved}, Hard: ${stats.hardSolved})
+Hard ratio: ${hardPct}% | Acceptance: ${stats.acceptanceRate}% | Global Rank: #${(stats.ranking ?? 0).toLocaleString()}
+Strong topics: ${strong || 'None yet'}
+Weak/missing topics: ${weak || 'None yet'}
+Total topics covered: ${sorted.length}
+Last 10 solves: ${recent || 'None'}
+
+Generate 6-8 highly specific, personalized coaching insights. Each must be directly actionable and placement-focused.
+
+Return a JSON array ONLY. Each object: { "category": one of [strength,weakness,interview,daily,pattern,motivation,progress], "emoji": single emoji, "title": max 6 words, "body": 2-3 sentences with exact numbers from their data, "action": ONE specific task they can do today }
+
+Rules:
+- Reference their ACTUAL numbers every time
+- weakness: name the exact LeetCode pattern they're missing
+- interview: connect their current level to what companies actually ask
+- daily: recommend a specific problem or concept to study NOW
+- pattern: a DSA pattern they should master next (e.g. "Monotonic Stack", "Segment Tree")
+- NO generic advice — make every insight unique to this data
+- At least 1 interview, 1 daily, 1 weakness insight
+
+Return ONLY the JSON array. No markdown. No extra text.`;
+};
+
+const teacherPrompt = (classData, topicData) => {
+  const synced  = classData.filter(d => d.leetcode?.lastSynced);
+  const n       = synced.length || 1;
+  const avg     = Math.round(synced.reduce((s, d) => s + (d.leetcode?.totalSolved ?? 0), 0) / n);
+  const avgAcc  = +(synced.reduce((s, d) => s + (d.leetcode?.acceptanceRate ?? 0), 0) / n).toFixed(1);
+  const top3    = [...synced].sort((a, b) => (b.leetcode?.totalSolved ?? 0) - (a.leetcode?.totalSolved ?? 0)).slice(0, 3).map(d => `${d.student.name}(${d.leetcode?.totalSolved ?? 0})`).join(', ');
+  const bottom3 = [...synced].sort((a, b) => (a.leetcode?.totalSolved ?? 0) - (b.leetcode?.totalSolved ?? 0)).slice(0, 3).map(d => `${d.student.name}(${d.leetcode?.totalSolved ?? 0})`).join(', ');
+  const weakT   = [...topicData].sort((a, b) => a.avg - b.avg).slice(0, 5).map(t => `${t.topic}(avg:${t.avg})`).join(', ');
+  const strongT = [...topicData].sort((a, b) => b.avg - a.avg).slice(0, 5).map(t => `${t.topic}(avg:${t.avg})`).join(', ');
+  const hardRdy = synced.filter(d => (d.leetcode?.hardSolved ?? 0) >= 10).length;
+  const atRisk  = synced.filter(d => (d.leetcode?.mediumSolved ?? 0) < 15).length;
+  const unsynced = classData.length - synced.length;
+
+  return `You are an expert CS professor and placement coordinator. Analyze class data and give actionable insights to improve student placement outcomes.
+
+CLASS DATA:
+Total: ${classData.length} students | Synced: ${synced.length} | Not synced: ${unsynced}
+Class avg solved: ${avg} | Avg acceptance: ${avgAcc}%
+Top performers: ${top3 || 'N/A'}
+Struggling students: ${bottom3 || 'N/A'}
+Placement-ready (10+ Hard): ${hardRdy}/${synced.length}
+At-risk students (<15 Medium): ${atRisk} students
+Weakest class topics: ${weakT || 'N/A'}
+Strongest class topics: ${strongT || 'N/A'}
+
+Generate 6-8 specific, actionable insights for the teacher. Mix of: class health, urgent actions, student spotlights, topic gaps, placement readiness.
+
+Return a JSON array ONLY. Each object: { "category": one of [strength,weakness,action,risk,class,pattern,motivation,progress], "emoji": single emoji, "title": max 6 words, "body": 2-3 sentences with class numbers, "action": one concrete step the teacher should take THIS WEEK }
+
+Rules:
+- risk: flag students or topics that are placement risks — name specific students
+- action: something assignable or schedulable this week
+- Reference actual counts and percentages
+- Think about upcoming campus recruitment season
+
+Return ONLY the JSON array. No markdown. No extra text.`;
+};
+
+// ─── Insight Card ─────────────────────────────────────────────────────────────
+function InsightCard({ insight, index }) {
+  const [open, setOpen] = useState(false);
+  const cfg = CAT[insight.category] ?? CAT.progress;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.07, type: 'spring', stiffness: 130 }}
+      className="rounded-xl overflow-hidden"
+      style={{
+        border:     `1px solid ${cfg.color}22`,
+        borderLeft: `3px solid ${cfg.color}`,
+        background: 'var(--bg-2)',
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-start gap-3 p-3 cursor-pointer"
+        onClick={() => setOpen(v => !v)}
+      >
+        <span className="text-sm flex-shrink-0 mt-0.5">{insight.emoji}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span
+              className="text-xs font-code px-1.5 py-0.5 rounded-md"
+              style={{ background: `${cfg.color}18`, color: cfg.color, fontSize: 9 }}
+            >
+              {cfg.label}
+            </span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {insight.title}
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {insight.body}
+          </p>
+        </div>
+        <div className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }}>
+          {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </div>
+      </div>
+
+      {/* Action — expands on click */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3 pb-3">
+              <div
+                className="flex items-start gap-2 px-2.5 py-2 rounded-lg"
+                style={{ background: `${cfg.color}12`, border: `1px solid ${cfg.color}25` }}
+              >
+                <Zap size={10} className="flex-shrink-0 mt-0.5" style={{ color: cfg.color }} />
+                <span className="text-xs font-medium leading-relaxed" style={{ color: cfg.color }}>
+                  {insight.action}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
 export default function GeminiInsight({
-  mode      = 'student',   // 'student' | 'teacher'
+  mode      = 'student',
   stats     = null,
   username  = '',
   classData = [],
   topicData = [],
 }) {
-  const [insights, setInsights] = useState(null);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState(null);
-  const [expanded, setExpanded] = useState(true);
+  const { user }       = useAuthStore();
+  const [insights,     setInsights]     = useState(null);
+  const [loading,      setLoading]      = useState(false);
+  const [error,        setError]        = useState(null);
+  const [lastUpdated,  setLastUpdated]  = useState(null);
+  const [refreshing,   setRefreshing]   = useState(false);
+  const prevSigRef = useRef(null);
 
-  const fetchInsights = useCallback(async () => {
-    if (mode === 'student' && !stats) {
-      toast.error('Sync your LeetCode first to get AI insights!');
-      return;
-    }
-    if (mode === 'teacher' && !classData.length) {
-      toast.error('No class data available yet.');
-      return;
+  const key = cKey(user?._id ?? 'anon', mode);
+
+  // Signature = a hash of the meaningful data so we know when to refetch
+  const signature = mode === 'student'
+    ? `${stats?.totalSolved}-${stats?.hardSolved}-${Object.keys(stats?.topicStats ?? {}).length}`
+    : `${classData.length}-${classData.filter(d => d.leetcode?.lastSynced).length}`;
+
+  const isReady = mode === 'student'
+    ? !!(stats && stats.totalSolved !== undefined)
+    : classData.length > 0;
+
+  const doFetch = useCallback(async (force = false) => {
+    if (!isReady) return;
+
+    if (!force) {
+      const cached = readCache(key);
+      if (cached && cached.sig === signature) {
+        setInsights(cached.data);
+        setLastUpdated(new Date(cached.ts));
+        prevSigRef.current = signature;
+        return;
+      }
     }
 
     setLoading(true);
     setError(null);
-    setInsights(null);
 
-    const prompt =
-      mode === 'student'
-        ? buildStudentPrompt(stats, username)
-        : buildTeacherPrompt(classData, topicData);
+    const prompt = mode === 'student'
+      ? studentPrompt(stats, username)
+      : teacherPrompt(classData, topicData);
 
     try {
-      // Calls POST /api/ai/insight through our backend proxy
-      // Backend uses Gemini — API key never touches the browser
-      const res = await aiAPI.getInsight([{ role: 'user', content: prompt }]);
-
-      // ✅ Gemini returns: { text: '["insight1","insight2","insight3"]' }
-      // (responseMimeType: 'application/json' guarantees clean JSON)
+      const res    = await aiAPI.getInsight([{ role: 'user', content: prompt }]);
       const raw    = res.data.text ?? '[]';
-      const clean  = raw.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(clean);
-
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        throw new Error('Gemini returned an unexpected response shape');
-      }
-
+      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      if (!Array.isArray(parsed) || !parsed.length) throw new Error('Bad shape');
       setInsights(parsed);
-    } catch (err) {
-      console.error('[Gemini insight error]', err);
-      setError(err.message || 'Failed to get AI insights');
-      toast.error('AI insights failed — check console');
+      setLastUpdated(new Date());
+      writeCache(key, parsed, signature);
+      prevSigRef.current = signature;
+    } catch {
+      setError('Could not load insights');
+      const stale = readCache(key);
+      if (stale) { setInsights(stale.data); setLastUpdated(new Date(stale.ts)); }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [mode, stats, username, classData, topicData]);
+  }, [isReady, signature, mode, stats, username, classData, topicData, key]);
+
+  // Auto-fetch when data becomes ready or signature changes
+  useEffect(() => {
+    if (!isReady) return;
+    if (signature !== prevSigRef.current) {
+      doFetch(false);
+    }
+  }, [signature, isReady]);
+
+  // Refresh after LC sync
+  useEffect(() => {
+    const handler = () => { setRefreshing(true); doFetch(true); };
+    window.addEventListener('leetcode-synced', handler);
+    return () => window.removeEventListener('leetcode-synced', handler);
+  }, [doFetch]);
 
   return (
     <div className="space-y-3">
-
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* Gemini "spark" icon */}
-          <div
-            className="w-6 h-6 rounded-lg flex items-center justify-center"
-            style={{
-              background: `${GEMINI_COLOR}18`,
-              border:     `1px solid ${GEMINI_COLOR}40`,
-            }}
-          >
-            <Sparkles size={12} style={{ color: GEMINI_COLOR }} />
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center"
+               style={{ background: 'var(--accent-glow)', border: '1px solid rgba(74,222,128,0.3)' }}>
+            <Brain size={12} style={{ color: 'var(--accent)' }} />
           </div>
-          <span
-            className="text-xs font-code font-medium"
-            style={{ color: GEMINI_COLOR }}
-          >
-            Gemini AI · {mode === 'student' ? 'Personal' : 'Class'} Insights
+          <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+            AI Insights
           </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Collapse toggle — only visible once insights are loaded */}
-          {insights && (
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setExpanded((v) => !v)}
-              className="p-1 rounded-lg"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            </motion.button>
+          {lastUpdated && !loading && (
+            <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
+              · {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
           )}
-
-          {/* Main action button */}
-          <motion.button
-            onClick={fetchInsights}
-            disabled={loading}
-            whileHover={{ scale: loading ? 1 : 1.06 }}
-            whileTap={{ scale: 0.96 }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-60"
-            style={{
-              background: insights ? 'transparent'   : GEMINI_COLOR,
-              color:      insights ? GEMINI_COLOR     : '#ffffff',
-              border:     insights ? `1px solid ${GEMINI_COLOR}` : 'none',
-            }}
-          >
-            {loading ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                >
-                  <RefreshCw size={10} />
-                </motion.div>
-                Thinking...
-              </>
-            ) : insights ? (
-              <><RefreshCw size={10} /> Refresh</>
-            ) : (
-              <><Sparkles size={10} /> Get Insights</>
-            )}
-          </motion.button>
         </div>
+
+        {isReady && (
+          <motion.button
+            onClick={() => { setRefreshing(true); doFetch(true); }}
+            disabled={loading || refreshing}
+            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+            className="p-1.5 rounded-lg disabled:opacity-40"
+            style={{ color: 'var(--text-muted)', background: 'var(--bg-2)' }}
+            title="Refresh insights"
+          >
+            <motion.div
+              animate={{ rotate: (loading || refreshing) ? 360 : 0 }}
+              transition={{ duration: 1, repeat: (loading || refreshing) ? Infinity : 0, ease: 'linear' }}
+            >
+              <RefreshCw size={12} />
+            </motion.div>
+          </motion.button>
+        )}
       </div>
 
-      {/* ── Content area ── */}
       <AnimatePresence mode="wait">
-
-        {/* Placeholder — before first fetch */}
-        {!insights && !loading && !error && (
-          <motion.div
-            key="placeholder"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="p-4 rounded-xl text-xs text-center"
-            style={{
-              background: 'var(--bg-2)',
-              border:     '1px dashed var(--border-2)',
-              color:      'var(--text-muted)',
-            }}
-          >
-            <Zap
-              size={16}
-              className="mx-auto mb-2"
-              style={{ color: 'var(--text-muted)' }}
-            />
-            Click{' '}
-            <strong style={{ color: 'var(--text-secondary)' }}>
-              Get Insights
-            </strong>{' '}
-            to have Gemini analyze{' '}
-            {mode === 'student' ? 'your LeetCode performance' : 'your class data'}{' '}
-            and give you 3 actionable coaching tips.
-          </motion.div>
-        )}
-
-        {/* Loading skeletons */}
-        {loading && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="space-y-2"
-          >
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="h-14 rounded-xl skeleton"
-                style={{ animationDelay: `${i * 0.15}s` }}
-              />
-            ))}
-            <p
-              className="text-center text-xs font-code pt-1"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Gemini is analyzing your data...
+        {/* Not ready */}
+        {!isReady && (
+          <motion.div key="nr" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="py-8 text-center rounded-xl"
+                      style={{ background: 'var(--bg-2)', border: '1px dashed var(--border-2)' }}>
+            <TrendingUp size={20} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
+            <p className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
+              {mode === 'student'
+                ? 'Sync LeetCode to unlock personalized coaching'
+                : 'Add students to unlock class insights'}
             </p>
           </motion.div>
         )}
 
-        {/* Error state */}
-        {error && !loading && (
-          <motion.div
-            key="error"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="p-3 rounded-xl text-xs"
-            style={{
-              background: 'var(--hard-bg)',
-              border:     '1px solid var(--hard)',
-              color:      'var(--hard)',
-            }}
-          >
-            ⚠ {error}
+        {/* Loading skeletons */}
+        {isReady && loading && !insights && (
+          <motion.div key="ld" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="space-y-2">
+            {[0,1,2,3].map(i => (
+              <div key={i} className="h-[72px] rounded-xl skeleton"
+                   style={{ animationDelay: `${i * 0.1}s` }} />
+            ))}
+            <p className="text-center text-xs font-code" style={{ color: 'var(--text-muted)' }}>
+              Analyzing your data...
+            </p>
+          </motion.div>
+        )}
+
+        {/* Error */}
+        {error && !loading && !insights && (
+          <motion.div key="err" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      className="p-3 rounded-xl text-xs flex items-center gap-2"
+                      style={{ background: 'var(--hard-bg)', border: '1px solid var(--hard)', color: 'var(--hard)' }}>
+            <AlertCircle size={13} /> {error}
           </motion.div>
         )}
 
         {/* Insights */}
-        {insights && !loading && expanded && (
-          <motion.div
-            key="insights"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-2 overflow-hidden"
-          >
-            {insights.map((insight, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1, type: 'spring', stiffness: 120 }}
-                className="p-3.5 rounded-xl text-xs leading-relaxed"
-                style={{
-                  background:  'var(--bg-2)',
-                  border:      `1px solid ${insightColors[i]}25`,
-                  borderLeft:  `3px solid ${insightColors[i]}`,
-                  color:       'var(--text-secondary)',
-                }}
-              >
-                <span className="mr-1.5">{insightIcons[i]}</span>
-                {insight}
-              </motion.div>
+        {insights && !loading && (
+          <motion.div key="ins" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      className="space-y-2">
+            {insights.map((ins, i) => (
+              <InsightCard key={i} insight={ins} index={i} />
             ))}
-
+            <p className="text-xs font-code text-center pt-1" style={{ color: 'var(--text-muted)' }}>
+              {insights.length} insights · tap any card to see action →
+            </p>
           </motion.div>
         )}
-
       </AnimatePresence>
     </div>
   );

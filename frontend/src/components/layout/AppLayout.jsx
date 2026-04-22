@@ -1,16 +1,17 @@
 import { useState }  from 'react';
 import { Outlet }    from 'react-router-dom';
-import { Menu }      from 'lucide-react';
 import { motion }    from 'framer-motion';
 import Sidebar        from './Sidebar';
 import Navbar         from './Navbar';
 import Chatbot        from '@/components/Chatbot';
+import Footer         from '@/components/layout/Footer';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <motion.div
@@ -24,19 +25,24 @@ export default function AppLayout() {
       )}
 
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'mobile-open' : ''}`}>
+      <div className={sidebarOpen ? 'mobile-open' : ''}>
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
-      {/* Main */}
+      {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <Navbar onMenuClick={() => setSidebarOpen((v) => !v)} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <Outlet />
-        </main>
+        <Navbar onMenuClick={() => setSidebarOpen(v => !v)} />
+
+        {/* Scrollable area with footer */}
+        <div className="flex-1 overflow-y-auto">
+          <main className="p-4 md:p-6 min-h-[calc(100vh-4rem-48px)]">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
       </div>
 
-      {/* ✅ Chatbot floating on all pages */}
+      {/* Global floating chatbot */}
       <Chatbot />
     </div>
   );

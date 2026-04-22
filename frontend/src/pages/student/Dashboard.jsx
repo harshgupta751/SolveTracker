@@ -64,12 +64,11 @@ function Section({ title, extra, children, delay = 0 }) {
 // ─── Onboarding prompt ────────────────────────────────────────────────────────
 function SetupPrompt({ user, onSave }) {
   const [username, setUsername] = useState(user?.leetcodeUsername || '');
-  const [classCode, setClassCode] = useState(user?.classCode || '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
-    const res = await onSave({ leetcodeUsername: username, classCode });
+   const res = await onSave({ leetcodeUsername: username });
     setSaving(false);
     if (res.success) toast.success('Profile updated! Now sync your LeetCode 🎉');
     else toast.error(res.error || 'Update failed');
@@ -97,7 +96,6 @@ function SetupPrompt({ user, onSave }) {
           <div className="grid sm:grid-cols-2 gap-3">
             {[
               { label: 'LeetCode Username', val: username, set: setUsername, placeholder: 'e.g. john_doe_lc' },
-              { label: 'Class Code (optional)', val: classCode, set: setClassCode, placeholder: 'e.g. CS2024ABC' },
             ].map(({ label, val, set, placeholder }) => (
               <div key={label}>
                 <label className="text-xs font-semibold mb-1 block" style={{ color: 'var(--text-secondary)' }}>{label}</label>

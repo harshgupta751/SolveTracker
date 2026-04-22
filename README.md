@@ -374,7 +374,7 @@ VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
 ## 📁 Folder Structure
 
 ```
-dsaandchill/
+SolveTracker/
 │
 ├── backend/                          # Node.js + Express API
 │   ├── middleware/
@@ -463,7 +463,6 @@ dsaandchill/
 
 ## 📸 Screenshots
 
-> Replace the placeholders below with actual screenshots from your running application.
 
 ### 🌙 Student Dashboard — Dark Mode
 <p align="center">
@@ -552,7 +551,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
   Full-Stack Developer · DSA Enthusiast · Open Source Contributor
   <br/><br/>
   <a href="https://github.com/harshgupta751">
-    <img src="https://img.shields.io/badge/GitHub-yourusername-181717?style=for-the-badge&logo=github" />
+    <img src="https://img.shields.io/badge/GitHub-harshgupta751-181717?style=for-the-badge&logo=github" />
   </a>
   &nbsp;
   <a href="https://linkedin.com/in/harshachieve100">
@@ -560,14 +559,14 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
   </a>
   &nbsp;
   <a href="mailto:harshachieve300@gmail.com">
-    <img src="https://img.shields.io/badge/Email-your@email.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" />
+    <img src="https://img.shields.io/badge/Email-harshachieve300@gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" />
   </a>
 </p>
 
 ---
 
 <p align="center">
-  <b>Built with ⚡ for the grind · DSA&Chill © 2025</b>
+  <b>Built with ⚡ for the grind · SolveTracker © 2026</b>
   <br/>
   <sub>If this project helped you, consider giving it a ⭐ on GitHub!</sub>
 </p>

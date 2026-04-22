@@ -1,10 +1,10 @@
-# <img src="https://raw.githubusercontent.com/yourusername/dsaandchill/main/frontend/public/favicon.svg" width="32" height="32" /> DSA&Chill
+# <img src="https://raw.githubusercontent.com/yourusername/dsaandchill/main/frontend/public/favicon.svg" width="32" height="32" /> SolveTracker
 
 > **Your AI-powered DSA learning system. Sync. Analyze. Crack placements.**
 
 <!-- BANNER IMAGE — replace with your actual screenshot -->
 <p align="center">
-  <img src="https://placehold.co/1200x500/09090f/22c55e?text=DSA%26Chill+%E2%80%94+AI-Powered+DSA+Learning+System&font=montserrat" alt="DSA&Chill Banner" width="100%" style="border-radius:12px;" />
+  <img src="https://placehold.co/1200x500/09090f/22c55e?text=DSA%26Chill+%E2%80%94+AI-Powered+DSA+Learning+System&font=montserrat" alt="SolveTracker Banner" width="100%" style="border-radius:12px;" />
 </p>
 
 <p align="center">
@@ -54,9 +54,9 @@ College DSA preparation is **broken**. Students grind LeetCode in isolation, ins
 | 🔒 Security flaws | Class-code sharing means anyone can join anyone's class |
 | 🏝️ Student isolation | No leaderboard, no peer benchmarking, no accountability mechanism |
 
-### Our Solution: DSA&Chill
+### Our Solution: SolveTracker
 
-**DSA&Chill** is a **production-grade, full-stack AI learning system** that bridges the gap between students grinding LeetCode and teachers tracking outcomes — in real time.
+**SolveTracker** is a **production-grade, full-stack AI learning system** that bridges the gap between students grinding LeetCode and teachers tracking outcomes — in real time.
 
 - 🔄 **Auto-sync** LeetCode stats via the unofficial GraphQL API — no manual entry ever
 - 🧠 **Gemini 2.5 Flash AI** generates personalized, data-driven coaching insights automatically
@@ -548,7 +548,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 <p align="center">
   <b>Harsh Gupta</b><br/>
-  Full-Stack Developer · DSA Enthusiast · Open Source Contributor
+  Full-Stack Developer · Crafting scalable solutions · Open Source Contributor
   <br/><br/>
   <a href="https://github.com/harshgupta751">
     <img src="https://img.shields.io/badge/GitHub-harshgupta751-181717?style=for-the-badge&logo=github" />

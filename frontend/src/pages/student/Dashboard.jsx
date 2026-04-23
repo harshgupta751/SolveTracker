@@ -11,6 +11,7 @@ import { StatSkeleton, CardSkeleton } from '@/components/shared/LoadingPulse';
 import SolvedRadial from '@/components/charts/SolvedRadar';
 import TopicBreakdown from '@/components/charts/TopicBreakdown';
 import StreakCalendar from '@/components/charts/StreakCalendar';
+import GeminiInsight from '@/components/ai/ClaudeInsight';
 import { formatNumber, relativeTime } from '@/lib/utils';
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
@@ -304,19 +305,28 @@ export default function StudentDashboard() {
 
         {/* AI insight panel — 2 cols */}
         <div className="lg:col-span-2">
-          <Section
-            title="AI Insight"
-            delay={0.4}
-            extra={
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-code"
-                   style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid rgba(74,222,128,0.25)' }}>
-                <Brain size={10} />
-                Claude
-              </div>
-            }
-          >
-            <AIInsightPanel stats={lc} />
-          </Section>
+<Section
+  title="AI Insight"
+  delay={0.4}
+  extra={
+    lc && (
+      <Link
+        to="/student/progress"
+        className="text-xs font-code flex items-center gap-1"
+        style={{ color: 'var(--accent)' }}
+      >
+        See all →
+      </Link>
+    )
+  }
+>
+  <GeminiInsight
+    mode="student"
+    stats={lc}
+    username={user?.leetcodeUsername ?? ''}
+    compact={true}
+  />
+</Section>
         </div>
       </div>
 
@@ -389,60 +399,11 @@ function EmptyState({ msg }) {
   );
 }
 
-// ─── AI Insight panel ─────────────────────────────────────────────────────────
-function AIInsightPanel({ stats }) {
-  // Deterministic local insights — swap this for a real Claude API call later
-  const getInsights = (lc) => {
-    if (!lc) return ['Sync your LeetCode account to unlock AI-powered study suggestions.'];
-    const insights = [];
-    const total = lc.totalSolved;
-    const hardRatio = lc.hardSolved / (total || 1);
 
-    if (total < 50)   insights.push('🌱 You\'re just getting started! Focus on Easy problems to build momentum.');
-    else if (total < 150) insights.push('📈 Good progress! Start mixing in Medium problems — aim for 60% of your daily solves.');
-    else              insights.push('🔥 Strong base! Time to tackle Hard problems. Aim for 1 Hard per day.');
 
-    if (hardRatio < 0.05 && total > 100) insights.push('⚡ Your Hard solve rate is low. Try LeetCode\'s "Hard" filter for 30 min daily.');
-    if (lc.acceptanceRate < 40)          insights.push('🎯 Acceptance rate below 40% — spend more time planning before coding.');
-    if (lc.easySolved > lc.mediumSolved * 3) insights.push('🚀 You\'re crushing Easy! Push yourself — Medium is where interviews live.');
 
-    // Topic-based
-    const topics = Object.entries(lc.topicStats instanceof Map ? Object.fromEntries(lc.topicStats) : lc.topicStats || {});
-    if (topics.length) {
-      const [weakTopic] = topics.sort((a, b) => a[1] - b[1]);
-      insights.push(`📚 Your weakest topic is ${weakTopic[0]} (${weakTopic[1]} solved). Consider a dedicated sprint.`);
-    }
 
-    return insights.slice(0, 3);
-  };
 
-  const insights = getInsights(stats);
 
-  return (
-    <div className="space-y-3">
-      {insights.map((insight, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 + i * 0.12 }}
-          className="p-3 rounded-xl text-xs leading-relaxed"
-          style={{ background: 'var(--bg-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-        >
-          {insight}
-        </motion.div>
-      ))}
-      {stats && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-          className="text-xs font-code text-center pt-1"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          Powered by Claude AI · updates on sync
-        </motion.p>
-      )}
-    </div>
-  );
-}
+
+

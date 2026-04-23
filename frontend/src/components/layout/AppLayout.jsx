@@ -35,7 +35,7 @@ export default function AppLayout() {
 
         {/* Scrollable area with footer */}
         <div className="flex-1 overflow-y-auto">
-          <main className="p-4 md:p-6 min-h-[calc(100vh-4rem-48px)]">
+        <main className="p-4 md:p-6 min-h-[calc(100vh-4rem-48px)] pb-24 md:pb-32">
             <Outlet />
           </main>
           <Footer />

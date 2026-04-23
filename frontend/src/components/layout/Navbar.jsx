@@ -108,30 +108,6 @@ export default function Navbar({ onMenuClick = () => {} }) {
           </kbd>
         </motion.button>
 
-        {/* Sync — only on student dashboard */}
-        {isStudentDash && (
-          <motion.button
-            onClick={handleSync}
-            disabled={syncing}
-            whileHover={{ scale: syncing ? 1 : 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
-            style={{
-              background: 'var(--accent-glow)',
-              border:     '1px solid var(--accent)',
-              color:      'var(--accent)',
-              boxShadow:  syncing ? '0 0 16px rgba(74,222,128,0.2)' : 'none',
-            }}
-          >
-            <motion.div
-              animate={{ rotate: syncing ? 360 : 0 }}
-              transition={{ duration: 1, repeat: syncing ? Infinity : 0, ease: 'linear' }}
-            >
-              <RefreshCw size={14} />
-            </motion.div>
-            <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync LC'}</span>
-          </motion.button>
-        )}
 
         {/* Theme toggle — replaces bell icon */}
         <ThemeToggle />

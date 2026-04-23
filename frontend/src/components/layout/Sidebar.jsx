@@ -1,10 +1,14 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate }    from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, BookOpen, TrendingUp, Users, PlusSquare, Trophy, LogOut, ChevronRight, Zap } from 'lucide-react';
-import { useState } from 'react';
-import useAuthStore from '@/store/authStore';
-import ThemeToggle from './ThemeToggle';
+import {
+  LayoutDashboard, BookOpen, TrendingUp, Users,
+  PlusSquare, Trophy, LogOut, ChevronRight, Zap,
+} from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import useAuthStore   from '@/store/authStore';
+import { leetcodeAPI } from '@/api';
 
+// ─── Nav configs ──────────────────────────────────────────────────────────────
 const studentNav = [
   { to: '/student',             icon: LayoutDashboard, label: 'Dashboard',   end: true },
   { to: '/student/sheets',      icon: BookOpen,        label: 'My Sheets' },
@@ -14,16 +18,127 @@ const studentNav = [
 
 const teacherNav = [
   { to: '/teacher',              icon: LayoutDashboard, label: 'Overview',    end: true },
-  { to: '/teacher/students',     icon: Users,           label: 'Students' },   // ← now real page
+  { to: '/teacher/students',     icon: Users,           label: 'Students' },
   { to: '/teacher/create-sheet', icon: PlusSquare,      label: 'New Sheet' },
   { to: '/teacher/leaderboard',  icon: Trophy,          label: 'Leaderboard' },
 ];
 
+// ─── Mini Streak — last 5 days of activity ───────────────────────────────────
+function MiniStreak() {
+  const [submissions, setSubmissions] = useState([]);
+
+  // Fetch cached stats on mount, re-fetch on sync
+  useEffect(() => {
+    leetcodeAPI.getStats()
+      .then(res => setSubmissions(res.data.leetcode?.recentSubmissions ?? []))
+      .catch(() => {});
+
+    const onSync = (e) => setSubmissions(e.detail?.recentSubmissions ?? []);
+    window.addEventListener('leetcode-synced', onSync);
+    return () => window.removeEventListener('leetcode-synced', onSync);
+  }, []);
+
+  // Build last-5-days heatmap
+  const days = useMemo(() => {
+    const map = {};
+    submissions.forEach(({ timestamp }) => {
+      const d = new Date(timestamp * 1000);
+      const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      map[k]  = (map[k] || 0) + 1;
+    });
+
+    return Array.from({ length: 5 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (4 - i));
+      const k     = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const count = map[k] || 0;
+      const label = d.toLocaleDateString('en-US', { weekday: 'short' });
+      return { count, label, isToday: i === 4 };
+    });
+  }, [submissions]);
+
+  const streak = useMemo(() => {
+    let s = 0;
+    const map = {};
+    submissions.forEach(({ timestamp }) => {
+      const d = new Date(timestamp * 1000);
+      const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      map[k]  = true;
+    });
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      if (map[k]) s++; else if (i > 0) break;
+    }
+    return s;
+  }, [submissions]);
+
+  const getColor = (count) => {
+    if (count === 0) return 'var(--border)';
+    if (count <= 2)  return 'rgba(74,222,128,0.45)';
+    return 'var(--accent)';
+  };
+
+  const totalSolved5 = days.reduce((s, d) => s + d.count, 0);
+
+  return (
+    <div
+      className="rounded-xl px-3 py-2.5"
+      style={{ background: 'var(--bg-2)', border: '1px solid var(--border)' }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-code" style={{ color: 'var(--text-muted)', fontSize: 10 }}>
+          5-day activity
+        </span>
+        {streak > 0 && (
+          <span className="text-xs font-display font-bold flex items-center gap-0.5"
+                style={{ color: 'var(--accent)', fontSize: 10 }}>
+            🔥 {streak}d
+          </span>
+        )}
+      </div>
+
+      {/* Squares */}
+      <div className="flex items-end gap-1 justify-between">
+        {days.map((day, i) => (
+          <div key={i} className="flex flex-col items-center gap-1">
+            <motion.div
+              title={`${day.label}: ${day.count} solved`}
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1,   opacity: 1 }}
+              transition={{ delay: i * 0.05, type: 'spring', stiffness: 200 }}
+              style={{
+                width:        day.isToday ? 14 : 12,
+                height:       day.isToday ? 14 : 12,
+                borderRadius: 3,
+                background:   getColor(day.count),
+                boxShadow:    day.count > 0 ? '0 0 6px rgba(74,222,128,0.3)' : 'none',
+                border:       day.isToday ? '1px solid var(--accent)' : '1px solid transparent',
+              }}
+            />
+            <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
+              {day.label[0]}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Sub-text */}
+      <p className="text-center mt-1.5" style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
+        {totalSolved5 > 0 ? `${totalSolved5} solved this week` : 'No activity yet'}
+      </p>
+    </div>
+  );
+}
+
+// ─── Main Sidebar ─────────────────────────────────────────────────────────────
 export default function Sidebar() {
   const { user, logout, isTeacher } = useAuthStore();
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const teacher   = isTeacher();
   const [collapsed, setCollapsed] = useState(false);
-  const navItems = isTeacher() ? teacherNav : studentNav;
+  const navItems = teacher ? teacherNav : studentNav;
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -32,14 +147,13 @@ export default function Sidebar() {
       animate={{ width: collapsed ? 72 : 240 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="flex flex-col flex-shrink-0 h-screen overflow-hidden relative z-20"
-      style={{
-        background:  'var(--surface)',
-        borderRight: '1px solid var(--border)',
-      }}
+      style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)' }}
     >
       {/* ── Logo ── */}
-      <div className="flex items-center justify-between px-4 h-16 flex-shrink-0"
-           style={{ borderBottom: '1px solid var(--border)' }}>
+      <div
+        className="flex items-center justify-between px-4 h-16 flex-shrink-0"
+        style={{ borderBottom: '1px solid var(--border)' }}
+      >
         <AnimatePresence initial={false}>
           {!collapsed && (
             <motion.div
@@ -49,8 +163,10 @@ export default function Sidebar() {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-2"
             >
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg"
-                   style={{ background: 'var(--accent-glow)', border: '1px solid var(--accent)' }}>
+              <div
+                className="flex items-center justify-center w-8 h-8 rounded-lg"
+                style={{ background: 'var(--accent-glow)', border: '1px solid var(--accent)' }}
+              >
                 <Zap size={14} style={{ color: 'var(--accent)' }} />
               </div>
               <span className="font-display font-bold text-base tracking-tight"
@@ -60,12 +176,14 @@ export default function Sidebar() {
             </motion.div>
           )}
         </AnimatePresence>
+
         {collapsed && (
           <div className="mx-auto flex items-center justify-center w-8 h-8 rounded-lg"
                style={{ background: 'var(--accent-glow)', border: '1px solid var(--accent)' }}>
             <Zap size={14} style={{ color: 'var(--accent)' }} />
           </div>
         )}
+
         {!collapsed && (
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -88,10 +206,10 @@ export default function Sidebar() {
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200"
                 style={{
-                  background:   isActive ? 'var(--accent-glow)' : 'transparent',
-                  border:       isActive ? '1px solid rgba(74,222,128,0.20)' : '1px solid transparent',
-                  color:        isActive ? 'var(--accent)' : 'var(--text-secondary)',
-                  boxShadow:    isActive ? '0 0 12px rgba(34,197,94,0.10)' : 'none',
+                  background: isActive ? 'var(--accent-glow)' : 'transparent',
+                  border:     isActive ? '1px solid rgba(74,222,128,0.20)' : '1px solid transparent',
+                  color:      isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                  boxShadow:  isActive ? '0 0 12px rgba(34,197,94,0.10)' : 'none',
                 }}
                 title={collapsed ? label : undefined}
               >
@@ -122,17 +240,21 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* ── Bottom user section ── */}
-      <div className="px-3 pb-4 space-y-2 flex-shrink-0"
-           style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
-
-        {/* Theme toggle */}
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} px-1`}>
-          {!collapsed && (
-            <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Theme</span>
-          )}
-          <ThemeToggle compact />
-        </div>
+      {/* ── Bottom section ── */}
+      <div
+        className="px-3 pb-4 space-y-2.5 flex-shrink-0"
+        style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}
+      >
+        {/* 5-day streak — only for students, only when expanded */}
+        {!teacher && !collapsed && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <MiniStreak />
+          </motion.div>
+        )}
 
         {/* Expand button when collapsed */}
         {collapsed && (
@@ -156,13 +278,17 @@ export default function Sidebar() {
               <img src={user.avatar} alt={user.name}
                    className="w-7 h-7 rounded-full object-cover" />
             ) : (
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-display"
-                   style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent)' }}>
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-display"
+                style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent)' }}
+              >
                 {user?.name?.[0]?.toUpperCase() ?? 'U'}
               </div>
             )}
-            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
-                  style={{ background: 'var(--easy)', border: '2px solid var(--surface)' }} />
+            <span
+              className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full"
+              style={{ background: 'var(--easy)', border: '2px solid var(--surface)' }}
+            />
           </div>
 
           <AnimatePresence initial={false}>

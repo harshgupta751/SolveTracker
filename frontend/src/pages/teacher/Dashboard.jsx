@@ -323,7 +323,9 @@ export default function TeacherDashboard() {
                   {[
                     { label: '#',     col: null },
                     { label: 'Student', col: null },
-                    { label: 'Split',   col: null },
+                    { label: 'E', col: null },
+                    { label: 'M', col: null },
+                    { label: 'H', col: null },
                     { label: 'Easy',    col: 'easySolved' },
                     { label: 'Med',     col: 'mediumSolved' },
                     { label: 'Hard',    col: 'hardSolved' },
@@ -379,11 +381,23 @@ export default function TeacherDashboard() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="flex justify-center">
-                          <DifficultyDonut easy={item.leetcode?.easySolved} medium={item.leetcode?.mediumSolved} hard={item.leetcode?.hardSolved} size={44} />
-                        </div>
-                      </td>
+{/* Replace the single donut <td> with THREE separate <td> columns: */}
+{[
+  { val: item.leetcode?.easySolved,   color: 'var(--easy)',   label: 'E' },
+  { val: item.leetcode?.mediumSolved, color: 'var(--medium)', label: 'M' },
+  { val: item.leetcode?.hardSolved,   color: 'var(--hard)',   label: 'H' },
+].map(({ val, color, label }) => (
+  <td key={label} className="py-3 px-3 text-center">
+    <div className="flex flex-col items-center" style={{ minWidth: 24 }}>
+      <span className="font-display font-bold text-base" style={{ color }}>
+        {val ?? '—'}
+      </span>
+      <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
+        {label}
+      </span>
+    </div>
+  </td>
+))}
                       {[
                         { val: item.leetcode?.easySolved,   color: 'var(--easy)'   },
                         { val: item.leetcode?.mediumSolved, color: 'var(--medium)' },

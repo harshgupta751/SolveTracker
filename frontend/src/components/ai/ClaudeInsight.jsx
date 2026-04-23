@@ -190,13 +190,7 @@ function InsightCard({ insight, index }) {
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export default function GeminiInsight({
-  mode      = 'student',
-  stats     = null,
-  username  = '',
-  classData = [],
-  topicData = [],
-}) {
+export default function GeminiInsight({ mode, stats, username, classData = [], topicData = [], compact = false }) {
   const { user }       = useAuthStore();
   const [insights,     setInsights]     = useState(null);
   const [loading,      setLoading]      = useState(false);
@@ -361,17 +355,28 @@ export default function GeminiInsight({
 )}
 
         {/* Insights */}
-        {insights && !loading && (
-          <motion.div key="ins" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      className="space-y-2">
-            {insights.map((ins, i) => (
-              <InsightCard key={i} insight={ins} index={i} />
-            ))}
-            <p className="text-xs font-code text-center pt-1" style={{ color: 'var(--text-muted)' }}>
-              {insights.length} insights · tap any card to see action →
-            </p>
-          </motion.div>
-        )}
+{insights && !loading && (
+  <motion.div key="ins" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="space-y-2">
+    {(compact
+      // In compact mode: prioritise daily > weakness > interview, max 3
+      ? [...insights]
+          .sort((a, b) => {
+            const order = { daily: 0, weakness: 1, interview: 2, pattern: 3, strength: 4, motivation: 5, progress: 6 };
+            return (order[a.category] ?? 9) - (order[b.category] ?? 9);
+          })
+          .slice(0, 3)
+      : insights
+    ).map((ins, i) => (
+      <InsightCard key={i} insight={ins} index={i} />
+    ))}
+    {!compact && (
+      <p className="text-xs font-code text-center pt-1" style={{ color: 'var(--text-muted)' }}>
+        {insights.length} insights · tap any card to see action →
+      </p>
+    )}
+  </motion.div>
+)}
       </AnimatePresence>
     </div>
   );

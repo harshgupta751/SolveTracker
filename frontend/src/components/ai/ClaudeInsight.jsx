@@ -338,13 +338,27 @@ export default function GeminiInsight({
         )}
 
         {/* Error */}
-        {error && !loading && !insights && (
-          <motion.div key="err" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      className="p-3 rounded-xl text-xs flex items-center gap-2"
-                      style={{ background: 'var(--hard-bg)', border: '1px solid var(--hard)', color: 'var(--hard)' }}>
-            <AlertCircle size={13} /> {error}
-          </motion.div>
-        )}
+{error && !loading && !insights && (
+  <motion.div key="err" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="p-4 rounded-xl text-xs space-y-2"
+              style={{ background: 'var(--bg-2)', border: '1px solid var(--border)' }}>
+    <div className="flex items-center gap-2" style={{ color: 'var(--medium)' }}>
+      <AlertCircle size={12} />
+      <span className="font-semibold">AI service is busy</span>
+    </div>
+    <p style={{ color: 'var(--text-muted)' }}>
+      High demand on the AI servers. Your cached insights are shown below — click refresh to retry.
+    </p>
+    <motion.button
+      onClick={() => { setRefreshing(true); doFetch(true); }}
+      whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+      style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent)' }}
+    >
+      <RefreshCw size={10} /> Retry Now
+    </motion.button>
+  </motion.div>
+)}
 
         {/* Insights */}
         {insights && !loading && (

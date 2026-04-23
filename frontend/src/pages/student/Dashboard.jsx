@@ -276,7 +276,7 @@ export default function StudentDashboard() {
           <Section title="Topic Breakdown" delay={0.3}
             extra={
               <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
-                Top 10 topics
+                All topics
               </span>
             }
           >

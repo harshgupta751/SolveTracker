@@ -56,7 +56,7 @@ const generateWithFallback = async (prompt, jsonMode = false, maxRetries = 2) =>
           model: modelName,
           generationConfig: {
             temperature:      0.7,
-            maxOutputTokens:  1000,
+            maxOutputTokens:  2500,
             ...(jsonMode ? { responseMimeType: 'application/json' } : {}),
           },
         });
@@ -118,9 +118,23 @@ router.post('/insight', verifyToken, async (req, res) => {
     }
 
     const { text, model } = await generateWithFallback(prompt, true);
-    setCache(cacheKey, text);
+    
+    let cleanText = text.replace(/```json|```/g, '').trim();
+    try {
+      JSON.parse(cleanText); // Test if it's completely valid JSON
+      
+      // If valid, save to cache and send to frontend
+      setCache(cacheKey, cleanText);
+      res.json({ text: cleanText, model });
+    } catch (parseErr) {
+      console.error('[AI] Model returned invalid/cut-off JSON:', cleanText);
+      // Don't cache it! Throw 500 so frontend can retry
+      return res.status(500).json({ 
+        message: 'AI generated incomplete data due to load. Please refresh to try again.',
+        retryable: true
+      });
+    }
 
-    res.json({ text, model });
   } catch (err) {
     console.error('[AI /insight error]', err?.message);
     res.status(503).json({

@@ -326,9 +326,6 @@ export default function TeacherDashboard() {
                     { label: 'E', col: null },
                     { label: 'M', col: null },
                     { label: 'H', col: null },
-                    { label: 'Easy',    col: 'easySolved' },
-                    { label: 'Med',     col: 'mediumSolved' },
-                    { label: 'Hard',    col: 'hardSolved' },
                     { label: 'Total',   col: 'totalSolved' },
                     { label: 'Acc%',    col: 'acceptanceRate' },
                     { label: 'Synced',  col: null },
@@ -399,9 +396,6 @@ export default function TeacherDashboard() {
   </td>
 ))}
                       {[
-                        { val: item.leetcode?.easySolved,   color: 'var(--easy)'   },
-                        { val: item.leetcode?.mediumSolved, color: 'var(--medium)' },
-                        { val: item.leetcode?.hardSolved,   color: 'var(--hard)'   },
                         { val: item.leetcode?.totalSolved,  color: 'var(--text-primary)' },
                       ].map(({ val, color }, j) => (
                         <td key={j} className="py-3 px-4 text-center">

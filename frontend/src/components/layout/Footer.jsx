@@ -77,7 +77,7 @@ export default function Footer() {
             <span className="text-xs font-code flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
               Made with <Heart size={10} style={{ color: 'var(--hard)' }} /> by{' '}
               <span className="font-semibold" style={{ color: 'var(--accent)' }}>
-                Harsh Gupta
+                CodeBuilders
               </span>
             </span>
           </div>

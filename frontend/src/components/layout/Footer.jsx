@@ -38,7 +38,7 @@ export default function Footer() {
             </div>
             <div>
               <span className="font-display font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-                DSA<span style={{ color: 'var(--accent)' }}>&amp;Chill</span>
+                Solve<span style={{ color: 'var(--accent)' }}>Tracker</span>
               </span>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 AI-Powered DSA Learning System
@@ -71,13 +71,13 @@ export default function Footer() {
           {/* Copyright + made by */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
-              © {currentYear} DSA&amp;Chill
+              © {currentYear} SolveTracker
             </span>
             <span style={{ color: 'var(--border-2)' }}>·</span>
             <span className="text-xs font-code flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
               Made with <Heart size={10} style={{ color: 'var(--hard)' }} /> by{' '}
               <span className="font-semibold" style={{ color: 'var(--accent)' }}>
-                CodeBuilders
+                Harsh Gupta
               </span>
             </span>
           </div>

@@ -538,12 +538,6 @@ Please follow the existing code style — ESM imports, functional components, Ta
 
 ---
 
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 👨‍💻 Author
 
 <p align="center">

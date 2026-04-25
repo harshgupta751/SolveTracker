@@ -171,7 +171,7 @@ export default function Sidebar() {
               </div>
               <span className="font-display font-bold text-base tracking-tight"
                     style={{ color: 'var(--text-primary)' }}>
-                DSA<span style={{ color: 'var(--accent)' }}>&Chill</span>
+                Solve<span style={{ color: 'var(--accent)' }}>Tracker</span>
               </span>
             </motion.div>
           )}

@@ -2,7 +2,7 @@ import { NavLink, useNavigate }    from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, BookOpen, TrendingUp, Users,
-  PlusSquare, Trophy, LogOut, ChevronRight, Zap,
+  PlusSquare, Trophy, LogOut, ChevronRight,
 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import useAuthStore   from '@/store/authStore';
@@ -163,25 +163,21 @@ export default function Sidebar() {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-2"
             >
-              <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{ background: 'var(--accent-glow)', border: '1px solid var(--accent)' }}
-              >
-                <Zap size={14} style={{ color: 'var(--accent)' }} />
-              </div>
-              <span className="font-display font-bold text-base tracking-tight"
-                    style={{ color: 'var(--text-primary)' }}>
-                Solve<span style={{ color: 'var(--accent)' }}>Tracker</span>
-              </span>
+<img
+  src="/logo.png"
+  alt="SolveTracker"
+ className="h-20 w-auto object-contain scale-110 origin-left"
+/>
             </motion.div>
           )}
         </AnimatePresence>
 
         {collapsed && (
-          <div className="mx-auto flex items-center justify-center w-8 h-8 rounded-lg"
-               style={{ background: 'var(--accent-glow)', border: '1px solid var(--accent)' }}>
-            <Zap size={14} style={{ color: 'var(--accent)' }} />
-          </div>
+<img
+  src="/icon.png"
+  alt="SolveTracker Icon"
+  className="w-20 h-20 object-contain mx-auto scale-125"
+/>
         )}
 
         {!collapsed && (

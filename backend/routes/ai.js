@@ -153,7 +153,7 @@ router.post('/chat', verifyToken, async (req, res) => {
 
     const isTeacher = userContext?.role === 'teacher';
 
-    const systemPrompt = `You are DSA Buddy 🤖, a friendly AI assistant built into DSA&Chill — an AI-powered platform that helps college students master Data Structures & Algorithms.
+    const systemPrompt = `You are DSA Buddy 🤖, a friendly AI assistant built into SolveTracker — an AI-powered platform that helps college students master Data Structures & Algorithms.
 
 About the platform:
 - Students sync their LeetCode stats automatically

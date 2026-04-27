@@ -4,7 +4,7 @@
 
 <!-- BANNER IMAGE — replace with your actual screenshot -->
 <p align="center">
-  <img src="https://placehold.co/1200x500/09090f/22c55e?text=DSA%26Chill+%E2%80%94+AI-Powered+DSA+Learning+System&font=montserrat" alt="SolveTracker Banner" width="100%" style="border-radius:12px;" />
+  <img src="https://github.com/user-attachments/assets/041fcd01-4225-420b-8847-19ad069aa3f0" alt="SolveTracker Banner" width="100%" style="border-radius:12px;" />
 </p>
 
 <p align="center">
@@ -466,42 +466,42 @@ SolveTracker/
 
 ### 🌙 Student Dashboard — Dark Mode
 <p align="center">
-  <img src="https://placehold.co/1100x620/09090f/22c55e?text=Student+Dashboard+%E2%80%94+Dark+Mode&font=montserrat" alt="Student Dashboard Dark" width="100%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/3ab77bcd-e830-4522-a762-0bd650cc48b5" alt="Student Dashboard Dark" width="100%" style="border-radius:10px;" />
 </p>
 
 ### ☀️ Student Dashboard — Light Mode
 <p align="center">
-  <img src="https://placehold.co/1100x620/fafbff/16a34a?text=Student+Dashboard+%E2%80%94+Light+Mode&font=montserrat" alt="Student Dashboard Light" width="100%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/6ce797de-7a28-4ab4-b539-f03297cbde86" alt="Student Dashboard Light" width="100%" style="border-radius:10px;" />
 </p>
 
 ### 📋 My Sheets — LeetCode Verify Flow
 <p align="center">
-  <img src="https://placehold.co/1100x620/09090f/4285f4?text=My+Sheets+%E2%80%94+Verify+Flow&font=montserrat" alt="My Sheets Verify" width="100%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/74529390-fd67-4712-b3c2-c7369aba757c" alt="My Sheets Verify" width="100%" style="border-radius:10px;" />
 </p>
 
 ### 🤖 AI Insights Panel
 <p align="center">
-  <img src="https://placehold.co/1100x620/09090f/22c55e?text=AI+Insights+%E2%80%94+Gemini+Coaching&font=montserrat" alt="AI Insights" width="100%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/cdb2011a-4034-416a-8d38-2b00cf4518aa" alt="AI Insights" width="100%" style="border-radius:10px;" />
 </p>
 
 ### 👩‍🏫 Teacher Dashboard — Class Overview
 <p align="center">
-  <img src="https://placehold.co/1100x620/09090f/818cf8?text=Teacher+Dashboard+%E2%80%94+Class+Overview&font=montserrat" alt="Teacher Dashboard" width="100%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/14d0be2c-33bd-417f-93c9-a1611c790cb0" alt="Teacher Dashboard" width="100%" style="border-radius:10px;" />
 </p>
 
 ### 👥 Manage Students — Invite Flow
 <p align="center">
-  <img src="https://placehold.co/1100x620/09090f/22c55e?text=Manage+Students+%E2%80%94+Invite+Flow&font=montserrat" alt="Manage Students" width="100%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/5cd93046-8265-4af5-87d8-d17c7d464341" alt="Manage Students" width="100%" style="border-radius:10px;" />
 </p>
 
 ### 🏆 Leaderboard — Podium & Rankings
 <p align="center">
-  <img src="https://placehold.co/1100x620/09090f/f59e0b?text=Leaderboard+%E2%80%94+Podium+%26+Rankings&font=montserrat" alt="Leaderboard" width="100%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/170e72f7-4646-4abf-85d6-0824f89ea8af" alt="Leaderboard" width="100%" style="border-radius:10px;" />
 </p>
 
 ### 💬 DSA Buddy Chatbot
 <p align="center">
-  <img src="https://placehold.co/500x600/111118/4285f4?text=DSA+Buddy+%E2%80%94+AI+Chatbot&font=montserrat" alt="DSA Buddy Chatbot" width="45%" style="border-radius:10px;" />
+  <img src="https://github.com/user-attachments/assets/f46f76fe-10e7-4a0b-ac9f-28c8f4196138" alt="DSA Buddy Chatbot" width="45%" style="border-radius:10px;" />
 </p>
 
 ---

@@ -14,6 +14,7 @@ import CreateSheet       from '@/pages/teacher/CreateSheet';
 import SheetEditor       from '@/pages/teacher/SheetEditor';
 import StudentView       from '@/pages/teacher/StudentView';
 import ManageStudents from '@/pages/teacher/ManageStudents';
+import TopicAnalysis from '@/pages/teacher/TopicAnalysis';
 import Leaderboard       from '@/pages/Leaderboard';
 import AppLayout         from '@/components/layout/AppLayout';
 
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="student/:studentId"    element={<StudentView />} />
         <Route path="leaderboard"           element={<Leaderboard />} />
         <Route path="students" element={<ManageStudents />} />
+        <Route path="topic-analysis" element={<TopicAnalysis />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -4,8 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, TrendingUp, BookOpen, BarChart3,
   ChevronRight, Search, ArrowUpDown,
-  Trophy, AlertTriangle, Clock, Wifi, WifiOff, Edit, Eye, EyeOff, Plus, Trash2
+  Trophy, AlertTriangle, Clock, Wifi, WifiOff, Edit, Eye, EyeOff, Plus, Trash2, FlaskConical
 } from 'lucide-react';
+import {
+  ClassDifficultyChart,
+  AcceptanceDistChart,
+  ClassTopicRadar,
+  SolvedDistChart,
+  ClassActivityChart,
+} from '@/components/charts/TeacherCharts';
 import toast from 'react-hot-toast';
 import useAuthStore from '@/store/authStore';
 import { useClassAnalytics } from '@/hooks/useAnalytics';
@@ -432,6 +439,96 @@ export default function TeacherDashboard() {
           </div>
         )}
       </motion.div>
+
+{/* ── Class Analytics Charts ── */}
+<motion.div
+  initial={{ opacity: 0, y: 16 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.52 }}
+>
+  <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center gap-2">
+      <BarChart3 size={16} style={{ color: 'var(--accent)' }} />
+      <h3 className="font-display font-bold text-base" style={{ color: 'var(--text-primary)' }}>
+        Class Analytics
+      </h3>
+    </div>
+    <motion.button
+      whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+      onClick={() => navigate('/teacher/topic-analysis')}
+      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+      style={{
+        background: 'var(--accent-glow)',
+        border:     '1px solid var(--accent)',
+        color:      'var(--accent)',
+      }}
+    >
+      <FlaskConical size={13} /> Topic Analysis →
+    </motion.button>
+  </div>
+
+  <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+    {/* Activity */}
+    <div className="card p-5 xl:col-span-2">
+      <p className="font-display font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>
+        📅 Class Submission Activity (Last 14 days)
+      </p>
+      {loading ? <div className="h-44 skeleton rounded-xl" /> : (
+        <ClassActivityChart classData={classData} />
+      )}
+    </div>
+
+    {/* Topic radar */}
+    <div className="card p-5">
+      <p className="font-display font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>
+        🕸️ Topic Strength Radar
+      </p>
+      {loading ? <div className="h-44 skeleton rounded-xl" /> : (
+        <ClassTopicRadar topicData={topicData} />
+      )}
+    </div>
+
+    {/* Difficulty by tier */}
+    <div className="card p-5">
+      <p className="font-display font-bold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
+        🎯 Avg Difficulty by Tier
+      </p>
+      <p className="text-xs font-code mb-3" style={{ color: 'var(--text-muted)' }}>
+        Gallant / Average / Gradual students
+      </p>
+      {loading ? <div className="h-44 skeleton rounded-xl" /> : (
+        <ClassDifficultyChart classData={classData} />
+      )}
+    </div>
+
+    {/* Solved distribution */}
+    <div className="card p-5">
+      <p className="font-display font-bold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
+        📊 Students by Problems Solved
+      </p>
+      <p className="text-xs font-code mb-3" style={{ color: 'var(--text-muted)' }}>
+        Distribution across your class
+      </p>
+      {loading ? <div className="h-44 skeleton rounded-xl" /> : (
+        <SolvedDistChart classData={classData} />
+      )}
+    </div>
+
+    {/* Acceptance rate dist */}
+    <div className="card p-5">
+      <p className="font-display font-bold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
+        ✅ Acceptance Rate Distribution
+      </p>
+      <p className="text-xs font-code mb-3" style={{ color: 'var(--text-muted)' }}>
+        How many students fall in each bucket
+      </p>
+      {loading ? <div className="h-44 skeleton rounded-xl" /> : (
+        <AcceptanceDistChart classData={classData} />
+      )}
+    </div>
+  </div>
+</motion.div>
+
       {/* ── My Sheets Section ── */}
 <motion.div
   initial={{ opacity: 0, y: 16 }}

@@ -2,7 +2,7 @@ import { NavLink, useNavigate }    from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, BookOpen, TrendingUp, Users,
-  PlusSquare, Trophy, LogOut, ChevronRight,
+  PlusSquare, Trophy, LogOut, ChevronRight, FlaskConical
 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import useAuthStore   from '@/store/authStore';
@@ -21,6 +21,7 @@ const teacherNav = [
   { to: '/teacher/students',     icon: Users,           label: 'Students' },
   { to: '/teacher/create-sheet', icon: PlusSquare,      label: 'New Sheet' },
   { to: '/teacher/leaderboard',  icon: Trophy,          label: 'Leaderboard' },
+  { to: '/teacher/topic-analysis', icon: FlaskConical, label: 'Topic Analysis' },
 ];
 
 // ─── Mini Streak — last 5 days of activity ───────────────────────────────────

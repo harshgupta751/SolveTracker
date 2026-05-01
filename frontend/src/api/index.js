@@ -60,6 +60,7 @@ export const analyticsAPI = {
   getClass:       () => api.get('/analytics/class'),
   getTopics:      () => api.get('/analytics/topics'),
   getLeaderboard: () => api.get('/analytics/leaderboard'),
+  getTopicStudents: (topic) => api.get(`/analytics/topic-students?topic=${encodeURIComponent(topic)}`),
 };
 
 // Teacher student management

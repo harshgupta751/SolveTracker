@@ -14,7 +14,7 @@ const FEATURES = [
   { icon: Zap,       title: 'Real-time Progress', desc: 'Students mark problems done. Progress syncs to the teacher dashboard instantly.' },
 ];
 
-const CODE_SNIPPET = `// DSA&Chill — auto-sync your LeetCode
+const CODE_SNIPPET = `// SolveTracker — auto-sync your LeetCode
 const stats = await fetchLeetCodeStats('username');
 // → { totalSolved: 342, easySolved: 120,
 //     mediumSolved: 180, hardSolved: 42,
@@ -52,7 +52,7 @@ export default function Landing() {
             <Zap size={14} style={{ color: 'var(--accent)' }} />
           </div>
           <span className="font-display font-bold text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            DSA<span style={{ color: 'var(--accent)' }}>&amp;Chill</span>
+            Solve<span style={{ color: 'var(--accent)' }}>Tracker</span>
           </span>
         </motion.div>
 
@@ -174,7 +174,7 @@ export default function Landing() {
                 ))}
               </div>
               <span className="text-xs font-code ml-2" style={{ color: 'var(--text-muted)' }}>
-                leetcode.js — DSA&amp;Chill
+                leetcode.js — SolveTracker
               </span>
             </div>
             <pre className="text-left p-5 text-sm font-code overflow-x-auto leading-relaxed"
@@ -267,7 +267,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="px-6 py-8 text-center" style={{ borderTop: '1px solid var(--border)' }}>
         <span className="font-code text-xs" style={{ color: 'var(--text-muted)' }}>
-          DSA&amp;Chill © {currentYear} — Built with ⚡ for the grind
+          SolveTracker © {currentYear} — Built with ⚡ for the grind
         </span>
       </footer>
     </div>

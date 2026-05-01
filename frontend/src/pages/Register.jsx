@@ -49,7 +49,7 @@ export default function Register() {
             <Zap size={16} style={{ color: 'var(--accent)' }} />
           </div>
           <span className="font-display font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
-            DSA<span style={{ color: 'var(--accent)' }}>&amp;Chill</span>
+            Solve<span style={{ color: 'var(--accent)' }}>Tracker</span>
           </span>
         </Link>
 

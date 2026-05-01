@@ -60,7 +60,7 @@ export default function Login() {
             className="font-display font-bold text-lg"
             style={{ color: 'var(--text-primary)' }}
           >
-            DSA<span style={{ color: 'var(--accent)' }}>&amp;Chill</span>
+            Solve<span style={{ color: 'var(--accent)' }}>Tracker</span>
           </span>
         </Link>
 
@@ -112,7 +112,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="font-code text-xs" style={{ color: 'var(--text-muted)' }}>
-          DSA&amp;Chill © {currentYear}
+          SolveTracker © {currentYear}
         </div>
       </motion.div>
 

@@ -18,7 +18,6 @@ import useAuthStore from '@/store/authStore';
 import { useClassAnalytics } from '@/hooks/useAnalytics';
 import { StatSkeleton, CardSkeleton } from '@/components/shared/LoadingPulse';
 import ClassHeatmap from '@/components/charts/ClassHeatmap';
-import DifficultyDonut from '@/components/charts/DifficultyDonut';
 import GeminiInsight from '@/components/ai/ClaudeInsight';
 import AnimatedCounter from '@/components/shared/AnimatedCounter';
 import { formatNumber, relativeTime, formatDate } from '@/lib/utils';
@@ -51,114 +50,6 @@ function StatCard({ label, value, sub, icon: Icon, color, delay = 0 }) {
   );
 }
 
-// ─── Student row ──────────────────────────────────────────────────────────────
-function StudentRow({ item, rank, onClick }) {
-  const { student, leetcode } = item;
-  const synced = !!leetcode?.lastSynced;
-
-  return (
-    <motion.tr
-      whileHover={{ backgroundColor: 'var(--bg-2)' }}
-      onClick={onClick}
-      className="cursor-pointer transition-colors border-b"
-      style={{ borderColor: 'var(--border)' }}
-    >
-      {/* Rank */}
-      <td className="py-3 px-4 w-10">
-        <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
-          {rank <= 3 ? ['🥇','🥈','🥉'][rank - 1] : `#${rank}`}
-        </span>
-      </td>
-
-      {/* Student info */}
-      <td className="py-3 px-4">
-        <div className="flex items-center gap-3">
-          <div className="relative flex-shrink-0">
-            {student.avatar ? (
-              <img src={student.avatar} className="w-8 h-8 rounded-full object-cover" alt="" />
-            ) : (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-display"
-                   style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent)' }}>
-                {student.name?.[0]?.toUpperCase()}
-              </div>
-            )}
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
-                  style={{
-                    background:  synced ? 'var(--easy)' : 'var(--text-muted)',
-                    borderColor: 'var(--surface)',
-                  }} />
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{student.name}</p>
-            <p className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
-              {student.leetcodeUsername ? `@${student.leetcodeUsername}` : 'No LC username'}
-            </p>
-          </div>
-        </div>
-      </td>
-
-      {/* Difficulty donut */}
-      <td className="py-3 px-4">
-        <div className="flex items-center justify-center">
-          <DifficultyDonut
-            easy={leetcode?.easySolved}
-            medium={leetcode?.mediumSolved}
-            hard={leetcode?.hardSolved}
-            size={48}
-          />
-        </div>
-      </td>
-
-      {/* Solved counts */}
-      <td className="py-3 px-4 text-center">
-        <span className="font-display font-bold text-lg" style={{ color: 'var(--easy)' }}>
-          {leetcode?.easySolved ?? '—'}
-        </span>
-      </td>
-      <td className="py-3 px-4 text-center">
-        <span className="font-display font-bold text-lg" style={{ color: 'var(--medium)' }}>
-          {leetcode?.mediumSolved ?? '—'}
-        </span>
-      </td>
-      <td className="py-3 px-4 text-center">
-        <span className="font-display font-bold text-lg" style={{ color: 'var(--hard)' }}>
-          {leetcode?.hardSolved ?? '—'}
-        </span>
-      </td>
-      <td className="py-3 px-4 text-center">
-        <span className="font-display font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
-          {leetcode?.totalSolved ?? '—'}
-        </span>
-      </td>
-
-      {/* Acceptance */}
-      <td className="py-3 px-4 text-center">
-        <span className="text-sm font-code" style={{ color: 'var(--text-secondary)' }}>
-          {leetcode?.acceptanceRate ? `${leetcode.acceptanceRate}%` : '—'}
-        </span>
-      </td>
-
-      {/* Last synced */}
-      <td className="py-3 px-4">
-        <div className="flex items-center gap-1.5">
-          {synced
-            ? <><Wifi size={11} style={{ color: 'var(--easy)' }} />
-                <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>
-                  {relativeTime(new Date(leetcode.lastSynced).getTime())}
-                </span></>
-            : <><WifiOff size={11} style={{ color: 'var(--text-muted)' }} />
-                <span className="text-xs font-code" style={{ color: 'var(--text-muted)' }}>Never</span></>
-          }
-        </div>
-      </td>
-
-      {/* Chevron */}
-      <td className="py-3 px-4 w-8">
-        <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
-      </td>
-    </motion.tr>
-  );
-}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function TeacherDashboard() {
